@@ -1,7 +1,7 @@
 #lang racket
 
 (provide (all-defined-out))
-(require syntax/parse unstable/match racket/syntax)
+(require syntax/parse racket/match racket/syntax)
 (require "utilities.rkt" "env.rkt")
 
 ;; Syntax-tree node representation.

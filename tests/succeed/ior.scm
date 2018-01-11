@@ -1,4 +1,4 @@
-;; bitwise or tests
+;; bitwise ior tests
 
 (displayln (= (bitwise-ior #xf0 #x0f) #xff))
 (displayln (= (bitwise-ior #x30 #x00) #x30))

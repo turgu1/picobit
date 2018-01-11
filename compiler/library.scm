@@ -305,6 +305,7 @@
       (if (= lx (u8vector-length y))
 	  (#%u8vector-equal?-loop x y (- lx 1))
 	  #f))))
+
 (define #%u8vector-equal?-loop
   (lambda (x y l)
     (if (= l 0)
@@ -337,26 +338,31 @@
 (define u8vector
   (lambda x
     (list->u8vector x)))
+
 (define list->u8vector
   (lambda (x)
     (let* ((n (length x))
-	   (v (#%make-u8vector n)))
+	         (v (#%make-u8vector n)))
       (#%list->u8vector-loop v 0 x)
       v)))
+
 (define #%list->u8vector-loop
   (lambda (v n x)
-    (u8vector-set! v n (car x))
-    (if (not (null? (cdr x)))
-	(#%list->u8vector-loop v (#%+ n 1) (cdr x)))))
+          (u8vector-set! v n (car x))
+          (if (not (null? (cdr x)))
+       	    (#%list->u8vector-loop v (#%+ n 1) (cdr x)))))
+
 (define make-u8vector
   (lambda (n x)
-    (#%make-u8vector-loop (#%make-u8vector n) (- n 1) x)))
+          (#%make-u8vector-loop (#%make-u8vector n) (- n 1) x)))
+
 (define #%make-u8vector-loop
   (lambda (v n x)
-    (if (>= n 0)
-        (begin (u8vector-set! v n x)
-               (#%make-u8vector-loop v (- n 1) x))
-        v)))
+          (if (>= n 0)
+            (begin (u8vector-set! v n x)
+                   (#%make-u8vector-loop v (- n 1) x))
+            v)))
+
 (define u8vector-copy!
   (lambda (source source-start target target-start n)
     (if (> n 0)

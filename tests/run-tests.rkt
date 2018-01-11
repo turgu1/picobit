@@ -22,7 +22,7 @@
       (test-suite
        file-str
        (begin
-         ;; (displayln file)
+         (displayln file)
          (test-case "no expected file"
                     (check-true (file-exists? expected)))
          (when (file-exists? expected)

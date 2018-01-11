@@ -4,11 +4,11 @@
 CC          := gcc
 
 #The Target Binary Program
-TARGET      := picobit-vm
+TARGET      := hex2bin
 
 #The Directories, Source, Includes, Objects, Binary and Resources
-SRCDIR      := main
-INCDIR      := main/include
+SRCDIR      := .
+INCDIR      := .
 BUILDDIR    := obj
 TARGETDIR   := bin
 SRCEXT      := c
@@ -28,7 +28,7 @@ SOURCES     := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS     := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.$(OBJEXT)))
 
 #Default Make
-all: resources $(TARGETDIR)/$(TARGET) compiler
+all: resources $(TARGETDIR)/$(TARGET)
 
 #Remake
 remake: cleaner all
@@ -37,7 +37,7 @@ run:
 	$(TARGETDIR)/$(TARGET) -T
 
 #Copy Resources from Resources Directory to Target Directory
-resources: directories .primitives.p
+resources: directories
 
 #Make the Directories
 directories:
@@ -69,20 +69,5 @@ $(BUILDDIR)/%.$(OBJEXT): $(SRCDIR)/%.$(SRCEXT)
 	@sed -e 's/.*://' -e 's/\\$$//' < $(BUILDDIR)/$*.$(DEPEXT).tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $(BUILDDIR)/$*.$(DEPEXT)
 	@rm -f $(BUILDDIR)/$*.$(DEPEXT).tmp
 
-primitive-gen = gawk -f scripts/scanner.awk -f scripts/primitive-$(1).awk .primitives.p >$(2)
-
-.primitives.p: $(SOURCES)
-	rm -f $@
-	for object in $(SOURCES); do \
-		gcc -E -DNO_PRIMITIVE_EXPAND $(CFLAGS) $(INC) \
-			$$object -o - >>$@; \
-	done
-	$(call primitive-gen,headergen,main/include/gen.primitives.h)
-	$(call primitive-gen,schemegen,compiler/gen.primitives.rkt)
-	$(call primitive-gen,dispatchgen,main/include/gen.dispatch.h)
-
-compiler:
-	raco make compiler/picobit.rkt
-
 #Non-File Targets
-.PHONY: all run remake clean cleaner resources compiler
+.PHONY: all run remake clean cleaner resources

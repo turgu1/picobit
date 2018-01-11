@@ -8,7 +8,7 @@
 ;; These definitions must match those in the VM (in picobit-vm.h).
 (define min-fixnum-encoding 3)
 (define min-fixnum -1)
-(define max-fixnum 256)
+(define max-fixnum 255)
 (define min-rom-encoding (+ min-fixnum-encoding (- max-fixnum min-fixnum) 1))
 (define min-ram-encoding 1280)
 
@@ -25,6 +25,7 @@
          (+ obj (- min-fixnum-encoding min-fixnum))]
         [else #f])) ; can't encode directly
 
+;; if object is a char, translate it as an integer.
 (define (translate-constant obj)
   (if (char? obj)
       (char->integer obj)
@@ -37,6 +38,28 @@
           [(assoc o constants)
            => (lambda (x) (vector-ref (cdr x) 0))]
           [else (compiler-error "unknown object" obj)])))
+
+;(define (add-rest-of-bignum-constant obj constants)
+;  (define descr
+;    (vector #f
+;            (asm-make-label 'constant)
+;            0
+;            #f))
+;  (define new-constants (dict-set constants obj descr))
+;)
+
+; [(exact-integer? o)
+;  (if (< (integer-length o) 32)
+;    new-constants
+;    (let ([hi (arithmetic-shift o -16)])
+;      (vector-set! descr 3 hi)
+;      ;; Recursion will stop once we reach 0 or -1 as the
+;      ;; high part, which will be matched by encode-direct.
+;      ;; Only the high part needs to be registered as a new
+;      ;; constant. The low part will be filled in at
+;      ;; encoding time.
+;      (add-constant hi new-constants #f))
+;  )]
 
 ;; TODO actually, seem to be in a pair, scheme object in car, vector in cdr
 ;; constant objects are represented by vectors
@@ -79,14 +102,14 @@
                   (vector-set! descr 3 elems)
                   (add-constant elems new-constants #f))]
                [(exact-integer? o)
-                (let ([hi (arithmetic-shift o -16)])
-                  (vector-set! descr 3 hi)
-                  ;; Recursion will stop once we reach 0 or -1 as the
-                  ;; high part, which will be matched by encode-direct.
-                  ;; Only the high part needs to be registered as a new
-                  ;; constant. The low part will be filled in at
-                  ;; encoding time.
-                  (add-constant hi new-constants #f))]
+                  (let ([hi (arithmetic-shift o -16)])
+                    (vector-set! descr 3 hi)
+                    ;; Recursion will stop once we reach 0 or -1 as the
+                    ;; high part, which will be matched by encode-direct.
+                    ;; Only the high part needs to be registered as a new
+                    ;; constant. The low part will be filled in at
+                    ;; encoding time.
+                    (add-constant hi new-constants #f))]
                (else
                 new-constants))]))
 
@@ -114,7 +137,7 @@
       ;; constants.
       (when (or (> i min-ram-encoding) (> (- i min-rom-encoding) 256))
         (compiler-error "too many constants"))
-      (vector-set! (cdr cst) 0 i))
+      (vector-set! (cdr cst) 0 i)) ;; Set constant index
     csts))
 
 (define (sort-globals globals)
@@ -190,7 +213,8 @@
          (asm-8 (+ #x00 n))]
         [else ; 4 bit opcode, 12 bits operand.
          (inc-instr-count! '---push-constant-2bytes)
-         (asm-16 (+ #xa000 n))]))
+         (asm-8 (+ #xa0 (bitwise-and #x0F (arithmetic-shift n -8))))
+         (asm-8 (bitwise-and #x00FF n))]))
 
 (define (push-stack n)
   (if (> n 31) ; 3 bit opcode, 5 bits operand
@@ -240,42 +264,134 @@
 
 ;;-----------------------------------------------------------------------------
 
+;; For the ESP32:
+;;
+;;  1) ROM constant indexes start at #xE000 (min-rom-encoding .. )
+;;  2) FALSE, TRUE and NIL are coded as #xFFFD, #xFFFE and #xFFFF respectively
+;;  3) FIXNUMs are coded 0xFE00.. 0xFF00 (-1 .. 255)
+;;  4) Cell types are different than the original picobit. Check vm-arch.h for details
+;;
+;; Cells are 5 bytes in length.
+;; Little Endian, not Big Endian
+;; CDR is bytes 1 and 2
+;; CAR is bytes 3 and 4
+;; Type + GC bits is byte #5
+
+(define (to_rom_index x)
+  (cond [(< x 3)
+         (+ x #xFFFD)]
+        [(< x min-rom-encoding)
+         (+ (- x 3) #xFE00)]
+        [else
+         (+ (- x min-rom-encoding) #xE000)]))
+
+         ; [(exact-integer? obj)
+         ;        ;-(display " exact-integer: ")
+         ;        (if (< (integer-length obj) 32)
+         ;          (begin (asm-32 obj) ;; FIXNUM
+         ;                 (asm-8  #x20)
+         ;                 ;-(printf "obj: ~v~n" obj)
+         ;           )
+         ;          (let ([hi (to_rom_index (encode-constant d3 constants))]) ;; BIGNUM
+         ;            (asm-16 obj)   ; bits 0-15
+         ;            (asm-16 hi)    ; pointer to hi
+         ;            (asm-8 #x14)
+         ;            ;-(printf "obj: ~v hi: ~v~n" obj hi)
+         ;          )
+         ;        )] ; FIXNUM / BIGNUM CODE
+
 (define (assemble-constant x constants)
   (match x
-    [`(,obj . ,(and descr `#(,_ ,label ,_ ,d3)))
+    [`(,obj . ,(and descr `#(,idx ,label ,_ ,d3)))
      (asm-label label)
      ;; see the vm source for a description of encodings
+     ;-(printf "[~v]" idx)
      (cond [(exact-integer? obj)
-            (let ([hi (encode-constant d3 constants)])
+            (let ([hi (to_rom_index (encode-constant d3 constants))]) ;; BIGNUM
+              (asm-16 obj)   ; bits 0-15
               (asm-16 hi)    ; pointer to hi
-              (asm-16 obj))] ; bits 0-15
+              (asm-8 #x14)
+            )] ; FIXNUM / BIGNUM CODE
            [(pair? obj)
-            (let ([obj-car (encode-constant (car obj) constants)]
-                  [obj-cdr (encode-constant (cdr obj) constants)])
-              (asm-16 (+ #x8000 obj-car))
-              (asm-16 (+ #x0000 obj-cdr)))]
+            ;-(display " pair: ")
+            (let ([obj-car (to_rom_index (encode-constant (car obj) constants))]
+                  [obj-cdr (to_rom_index (encode-constant (cdr obj) constants))])
+              (asm-16 obj-cdr)
+              (asm-16 obj-car)
+              (asm-8 0)
+              ;-(printf "cdr: ~v car: ~v~n" obj-cdr obj-car)
+            )] ; PAIR CODE
            [(symbol? obj)
-            (asm-32 #x80002000)]
+            ;-(displayln " symbol")
+            (asm-32 #xFFFFFFFF)
+            (asm-8 #x34)] ; SYMBOL CODE
            [(string? obj)
-            (let ([obj-enc (encode-constant d3 constants)])
-              (asm-16 (+ #x8000 obj-enc))
-              (asm-16 #x4000))]
+            ;-(displayln " string")
+            (let ([obj-enc (to_rom_index (encode-constant d3 constants))])
+              (asm-16 #xFFFF)
+              (asm-16 obj-enc)
+              (asm-8 #x18))] ; STRING CODE
            [(vector? obj) ; ordinary vectors are stored as lists
-            (let ([obj-car (encode-constant (car d3) constants)]
-                  [obj-cdr (encode-constant (cdr d3) constants)])
-              (asm-16 (+ #x8000 obj-car))
-              (asm-16 (+ #x0000 obj-cdr)))]
+            ;-(display " vector: ")
+            (let ([obj-car (to_rom_index (encode-constant (car d3) constants))]
+                  [obj-cdr (to_rom_index (encode-constant (cdr d3) constants))])
+              (asm-16 obj-cdr)
+              (asm-16 obj-car)
+              (asm-8 0)
+              ;-(printf "cdr: ~v car: ~v~n" obj-cdr obj-car)
+            )] ; PAIR CODE
            [(u8vector? obj)
-            (let ([obj-enc (encode-constant d3 constants)]
+            ;-(display " u8vector: ")
+            (let ([obj-enc (to_rom_index (encode-constant d3 constants))]
                   [l       (length d3)])
               ;; length is stored raw, not encoded as an object
               ;; however, the bytes of content are encoded as
               ;; fixnums
-              (asm-16 (+ #x8000 l))
-              (asm-16 (+ #x6000 obj-enc)))]
+              (asm-16 obj-enc)
+              (asm-16 l)
+              (asm-8 #x30)
+              ;-(printf "enc: ~v length: ~v~n" obj-enc l)
+            )] ; VECTOR CODE
            [else
             (compiler-error "unknown object type" obj)])]))
 
+;; Original code
+;
+;(define (assemble-constant x constants)
+;  (match x
+;    [`(,obj . ,(and descr `#(,_ ,label ,_ ,d3)))
+;     (asm-label label)
+;     ;; see the vm source for a description of encodings
+;     (cond [(exact-integer? obj)
+;            (let ([hi (encode-constant d3 constants)])
+;              (asm-16 hi)    ; pointer to hi
+;              (asm-16 obj))] ; bits 0-15
+;           [(pair? obj)
+;            (let ([obj-car (encode-constant (car obj) constants)]
+;                  [obj-cdr (encode-constant (cdr obj) constants)])
+;              (asm-16 (+ #x8000 obj-car))
+;              (asm-16 (+ #x0000 obj-cdr)))]
+;           [(symbol? obj)
+;            (asm-32 #x80002000)]
+;           [(string? obj)
+;            (let ([obj-enc (encode-constant d3 constants)])
+;              (asm-16 (+ #x8000 obj-enc))
+;              (asm-16 #x4000))]
+;           [(vector? obj) ; ordinary vectors are stored as lists
+;            (let ([obj-car (encode-constant (car d3) constants)]
+;                  [obj-cdr (encode-constant (cdr d3) constants)])
+;              (asm-16 (+ #x8000 obj-car))
+;              (asm-16 (+ #x0000 obj-cdr)))]
+;           [(u8vector? obj)
+;            (let ([obj-enc (encode-constant d3 constants)]
+;                  [l       (length d3)])
+;              ;; length is stored raw, not encoded as an object
+;              ;; however, the bytes of content are encoded as
+;              ;; fixnums
+;              (asm-16 (+ #x8000 l))
+;              (asm-16 (+ #x6000 obj-enc)))]
+;           [else
+;            (compiler-error "unknown object type" obj)])]))
 
 (define (assemble code port)
 
@@ -309,7 +425,7 @@
   (let ((constants (sort-constants constants))
         (globals   (sort-globals   globals)))
 
-    (asm-begin! code-start #t)
+    (asm-begin! code-start #f) ;; Was #t for big-endian (GT)
 
     ;; Header.
     (asm-16 #xfbd7)
