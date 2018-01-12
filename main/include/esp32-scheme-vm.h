@@ -27,6 +27,9 @@ extern void terminate();
   #define DEBUGGING 1
   #define TRACING   1
   #define TESTS     1
+
+  #define E32(instr)
+  #define WKS(instr) instr
 #endif
 
 #if ESP32
@@ -36,11 +39,14 @@ extern void terminate();
   #include "esp_spi_flash.h"
   #include "esp_heap_caps.h"
 
-  #define STATS     0
+  #define STATS     1
   #define DEBUGGING 1
-  #define TRACING   0
+  #define TRACING   1
   #define TESTS     0
   #define VERBOSE   true
+
+  #define E32(instr) instr
+  #define WKS(instr)
 #endif
 
 #define CONFIG_BIGNUM_LONG 1

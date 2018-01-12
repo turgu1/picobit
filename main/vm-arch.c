@@ -8,6 +8,7 @@
 
 void vm_arch_init()
 {
+  keep_running = true;
 }
 
 cell_p pop()
@@ -182,6 +183,23 @@ cell_p encode_int(int32_t val)
     EXPECT(val < 0x07FFFFF, "encode_int", "Value too large");
     return new_bignum(val & 0x0000FFFF, ENCODE_SMALL_INT(val >> 16));
   }
+}
+
+void string2cstring(cell_p p, char *str, uint16_t length)
+{
+  EXPECT(IS_STRING(p), "string2cstring", "string");
+  if (IN_RAM(p)) {
+    p = RAM_STRING_GET_CHARS(p);
+  }
+  else {
+    p = ROM_STRING_GET_CHARS(p);
+  }
+
+  while ((length-- > 1) && (p != NIL)) {
+    *str++ = (char) decode_int(GET_CAR(p));
+    p = GET_CDR(p);
+  }
+  *str = 0;
 }
 
 

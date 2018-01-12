@@ -45,7 +45,8 @@ const char * const primitive_names[] = {
   "clock",
   "#%getchar-wait",
   "#%putchar",
-  "#%gpio"
+  "#%gpio",
+  "#%sys"
 };
 #endif /* CONFIG_DEBUG_STRINGS */
 
@@ -91,3 +92,4 @@ extern void primitive_clock();
 extern void primitive_getchar_wait();
 extern void primitive_putchar();
 extern void primitive_gpio();
+extern void primitive_sys();

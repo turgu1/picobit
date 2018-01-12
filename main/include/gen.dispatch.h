@@ -318,6 +318,14 @@
             primitive_gpio();
             env = new_pair(reg1, env);
             break;
+
+          case 11 :
+            TRACE("  (%s <%d>)\n", "#%sys", 2);
+            reg2 = pop();
+            reg1 = pop();
+            primitive_sys();
+            env = new_pair(reg1, env);
+            break;
         }
         break;
 

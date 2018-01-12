@@ -66,7 +66,7 @@ void TRACE(char * format, ...)
     //show(env);
     //putchar('\n');
     va_start(ap, format);
-    fprintf(stderr, "[%ld]", last_pc.c - program);
+    fprintf(stderr, "[%p]", (void *) (last_pc.c - program));
     vfprintf(stderr, format, ap);
     fflush(stdout);
   }

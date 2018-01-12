@@ -50,7 +50,7 @@
   PRIVATE cell_p   free_cells;
   PRIVATE vector_p vector_free_cells;
 
-  #if DEBUGGING
+  #if DEBUGGING || STATISTICS
     PRIVATE uint16_t   free_cells_count;
     PRIVATE uint16_t   used_cells_count;
     PRIVATE uint16_t vector_cells_count;

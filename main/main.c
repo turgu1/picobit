@@ -19,6 +19,12 @@
 #include "testing.h"
 
 #if WORKSTATION
+  #include <signal.h>
+
+  void intHandler(int dummy) {
+    keep_running = false;
+  }
+
   bool initialisations(char * program_filename)
   {
     if ((program = calloc(65536, 1)) == NULL) {
@@ -33,6 +39,8 @@
 
     kb_init();
 
+    signal(SIGINT, intHandler);
+
     return true;
   }
 
@@ -46,9 +54,12 @@
       if (verbose) fputc('\n', stderr);
     #endif
 
+    if (!keep_running) fprintf(stderr, "\nInterrupted.\n");
+
     fflush(stderr);
     fflush(stdout);
     kb_restore();
+
     exit(1);
   }
 

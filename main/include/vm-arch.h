@@ -472,7 +472,6 @@ typedef cell_flags * cell_flags_ptr;
 #define SMALL_INT_START            ((IDX) 0xFE00)
 #define SMALL_INT_MAX              ((IDX) 0xFE00 + 256)
 #define SMALL_INT_MASK             0x01FF
-#define IS_SMALL_INT(p)            ((p >= SMALL_INT_START) && (p <= SMALL_INT_MAX))
 
 #define SMALL_INT_VALUE(p)         (((int16_t)(p & SMALL_INT_MASK)) - 1)
 #define ENCODE_SMALL_INT(v)        ((cell_p) ((v) + 1) | SMALL_INT_START)
@@ -505,6 +504,12 @@ typedef cell_flags * cell_flags_ptr;
 
 #define IN_RAM(p)                  (p >= reserved_cells_count) && (p < ram_heap_size)
 #define IN_ROM(p)                  (p >= ROM_START_ADDR) && (p < ROM_MAX_ADDR)
+
+#define IS_SMALL_INT(p)            ((p >= SMALL_INT_START) && (p <= SMALL_INT_MAX))
+#define IS_BIGNUM(p)               ((IN_RAM(p) && RAM_IS_BIGNUM(p)) || (IN_ROM(p) && ROM_IS_BIGNUM(p)))
+#define IS_NUMBER(p)               IS_SMALL_INT(p) || IS_BIGNUM(p)
+
+#define IS_STRING(p)               ((IN_RAM(p) && RAM_IS_STRING(p)) || (IN_ROM(p) && ROM_IS_STRING(p)))
 
 #define RAM_GET_TYPE(p)            ram_heap_flags[p].type
 #define RAM_SET_TYPE(p, t)         ram_heap_flags[p].type = t
@@ -671,31 +676,35 @@ PUBLIC void vm_arch_init();
 PUBLIC cell_p pop();
 
 PUBLIC cell_p new_closure(cell_p env, code_p code);
-PUBLIC cell_p new_cont(cell_p parent, cell_p closure);
-PUBLIC cell_p new_pair(cell_p car, cell_p cdr);
-PUBLIC cell_p new_string(cell_p chars_p);
-PUBLIC cell_p new_fixnum(int32_t value);
-PUBLIC cell_p new_bignum(int16_t lo, cell_p high);
-PUBLIC cell_p new_vector(uint16_t length);
+PUBLIC cell_p    new_cont(cell_p parent, cell_p closure);
+PUBLIC cell_p    new_pair(cell_p car, cell_p cdr);
+PUBLIC cell_p  new_string(cell_p chars_p);
+PUBLIC cell_p  new_fixnum(int32_t value);
+PUBLIC cell_p  new_bignum(int16_t lo, cell_p high);
+PUBLIC cell_p  new_vector(uint16_t length);
 
 PUBLIC int32_t decode_int(cell_p p);
-PUBLIC cell_p encode_int(int32_t val);
+PUBLIC cell_p  encode_int(int32_t val);
+
+PUBLIC void string2cstring(cell_p p, char *str, uint16_t length);
 
 PUBLIC void decode_2_int_args();
 
 PUBLIC uint16_t global_count;
 PUBLIC uint8_t reserved_cells_count;
 
-PUBLIC IDX vector_heap_size;
-
 PUBLIC cell_data_ptr  ram_heap_data;   // read/write
-PUBLIC cell_flags_ptr ram_heap_flags; // read/write
-PUBLIC cell_p   ram_heap_end;
-PUBLIC IDX      ram_heap_size; // as a number of cells
+PUBLIC cell_flags_ptr ram_heap_flags;  // read/write
+PUBLIC cell_p         ram_heap_end;
+PUBLIC IDX            ram_heap_size;   // as a number of cells
 
-PUBLIC cell_ptr rom_heap;  // read only
+PUBLIC cell_ptr rom_heap;              // read only
 
 PUBLIC cell_ptr vector_heap;
+PUBLIC IDX      vector_heap_size;
+
+
+PUBLIC volatile bool keep_running; // Used to stop the interpreter
 
 #undef PUBLIC
 #endif

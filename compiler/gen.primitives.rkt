@@ -41,3 +41,4 @@
 (define-primitive #%getchar-wait 2 40 )
 (define-primitive #%putchar 2 41 #:unspecified-result)
 (define-primitive #%gpio 2 42 )
+(define-primitive #%sys 2 43 )

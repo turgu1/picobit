@@ -240,7 +240,8 @@ void return_to_free_list(cell_p p)
 
 void mm_gc()
 {
-  INFO_MSG("Garbage collection Started");
+  // INFO_MSG("mm_gc: Garbage collection Started");
+  E32(taskYIELD());
 
   #if STATISTICS
     used_cells_count = 0;
@@ -282,7 +283,7 @@ void mm_gc()
     }
   #endif
 
-  INFO_MSG("Garbage Collection Completed");
+  // INFO_MSG("mm_gc: Garbage Collection Completed");
 }
 
 /**
@@ -292,6 +293,8 @@ void mm_gc()
 
 PRIVATE void mm_compact_vector_space ()
 {
+  E32(taskYIELD());
+
   cell_p cur = 0;
   cell_p prev = NIL;
 
@@ -347,14 +350,14 @@ cell_p mm_new_vector_cell(uint16_t length, cell_p from)
 
   if ((vector_heap_size - vector_free_cells) < length) {
 
-    INFO_MSG("Vector Space compaction\n");
+    INFO_MSG("mm_new_vector_cell: Vector Space compaction\n");
 
     mm_gc ();
     mm_compact_vector_space();
 
     // free space too small, trigger gc
     if ((vector_heap_size - vector_free_cells) < length) { // we gc'd, but no space is big enough for the vector
-      FATAL("alloc_vec_cell", "No room for vector");
+      FATAL("mm_new_vector_cell", "No room for vector");
     }
   }
 
@@ -375,7 +378,7 @@ cell_p mm_new_vector_cell(uint16_t length, cell_p from)
 cell_p mm_new_ram_cell()
 {
   if (free_cells == NIL) {
-    INFO_MSG("Free Cells Allocated since last GC: %d\n", free_allocated_count);
+    // INFO_MSG("Free Cells Allocated since last GC: %d\n", free_allocated_count);
     mm_gc();
     if (free_cells == NIL) {
       FATAL("mm_gc", "MEMORY EXHAUSTED!!");
@@ -394,6 +397,8 @@ cell_p mm_new_ram_cell()
 
 bool mm_init(uint8_t * program)
 {
+  E32(taskYIELD());
+
   reg1 =
   reg2 =
   reg3 =

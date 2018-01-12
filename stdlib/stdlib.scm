@@ -13,13 +13,15 @@
 
 (define sleep
   (lambda (duration)
-    (#%sleep-aux (#%+ (clock) duration))))
+    (SYS Sleep duration)))
 
-(define #%sleep-aux
-  (lambda (wake-up)
-    (if (< (clock) wake-up)
-        (#%sleep-aux wake-up)
-        #f)))
+;    (#%sleep-aux (#%+ (clock) duration))))
+;
+;(define #%sleep-aux
+;  (lambda (wake-up)
+;    (if (< (clock) wake-up)
+;        (#%sleep-aux wake-up)
+;        #f)))
 
 (define (display x)
         (if (string? x)

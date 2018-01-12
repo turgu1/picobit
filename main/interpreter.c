@@ -157,7 +157,7 @@ void interpreter()
 
   pc.c = program + (program[2] * 5) + 4;
 
-  for (;;) {
+  while (keep_running) {
     #if DEBUGGING
       if (pc.c >= (program + max_addr)) {
         FATAL_MSG("Interpreter reached an non-program location: %d\n", (int) (pc.c - program));
