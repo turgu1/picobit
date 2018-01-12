@@ -87,7 +87,10 @@
     (,#'u8vector-length   . ,u8vector-length)
     (,#'boolean?          . ,boolean?)
     (,#'bitwise-ior       . ,bitwise-ior)
-    (,#'bitwise-xor       . ,bitwise-xor)))
+    (,#'bitwise-xor       . ,bitwise-xor)
+    (,#'bitwise-and       . ,bitwise-and)
+    (,#'bitwise-not       . ,bitwise-not)
+    ))
 
 (for ([(name folder) (in-pairs folders)])
   (add-constant-folder name folder))

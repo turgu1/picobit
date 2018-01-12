@@ -40,3 +40,4 @@
 (define-primitive clock 0 39 )
 (define-primitive #%getchar-wait 2 40 )
 (define-primitive #%putchar 2 41 #:unspecified-result)
+(define-primitive GPIO 2 42 )

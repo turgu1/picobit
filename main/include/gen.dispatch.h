@@ -310,6 +310,14 @@
             reg1 = pop();
             primitive_putchar();
             break;
+
+          case 10 :
+            TRACE("  (%s <%d>)\n", "GPIO", 2);
+            reg2 = pop();
+            reg1 = pop();
+            primitive_gpio();
+            env = new_pair(reg1, env);
+            break;
         }
         break;
 
