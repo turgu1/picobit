@@ -541,6 +541,10 @@ typedef cell_flags * cell_flags_ptr;
 #define HAS_RIGHT_LINK(p)          ((ram_heap_flags[p].bits & 0x30) == 0)
 #define HAS_LEFT_LINK(p)           ((ram_heap_flags[p].bits & 0x20) == 0)
 
+#define IS_PAIR(p) ((IN_RAM(p) && RAM_IS_PAIR(p)) || (IN_ROM(p) && ROM_IS_PAIR(p)))
+#define GET_CAR(p) IN_RAM(p) ? RAM_GET_CAR(p) : ROM_GET_CAR(p)
+#define GET_CDR(p) IN_RAM(p) ? RAM_GET_CDR(p) : ROM_GET_CDR(p)
+
 // Fixnum
 
 #define RAM_GET_FIXNUM_VALUE(p)    ram_heap_data[p].fixnum.value

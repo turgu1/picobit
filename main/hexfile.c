@@ -110,7 +110,7 @@ bool read_hex_file(char * filename, uint8_t * buffer, int size)
   fclose (f);
 
   #if DEBUGGING
-    INFO_MSG("read_hex_file: Load size: %u\n", max_addr);
+    INFO_MSG("read_hex_file: Load size: %u", max_addr);
   #endif
 
   // Little endian...

@@ -312,7 +312,7 @@
             break;
 
           case 10 :
-            TRACE("  (%s <%d>)\n", "GPIO", 2);
+            TRACE("  (%s <%d>)\n", "#%gpio", 2);
             reg2 = pop();
             reg1 = pop();
             primitive_gpio();

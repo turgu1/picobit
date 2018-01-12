@@ -470,7 +470,7 @@ bool mm_init(uint8_t * program)
 
   if (!check_free_list(ram_heap_size)) return false;
 
-  INFO_MSG("Globals Size: %u\nROM Constants Size: %u\n", program[3], program[2]);
+  INFO_MSG("mm_init: Globals Size: %u; ROM Constants Size: %u", program[3], program[2]);
 
   return true;
 }

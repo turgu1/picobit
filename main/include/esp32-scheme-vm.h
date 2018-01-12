@@ -54,15 +54,15 @@ extern void terminate();
 #endif
 
 #if DEBUGGING
-  #define   FATAL_MSG(format, ...) { fprintf(stderr, "\nFATAL - In " format, ## __VA_ARGS__); putchar('\n'); fflush(stdout); terminate(); }
-  #define   ERROR_MSG(format, ...) { fprintf(stderr, "\nERROR - In " format, ## __VA_ARGS__); putchar('\n'); }
-  #define WARNING_MSG(format, ...) { fprintf(stderr, "\nWARNING - In " format, ## __VA_ARGS__); putchar('\n'); }
-  #define    INFO_MSG(format, ...) { if (verbose) { fprintf(stderr,    "\nINFO - In " format, ## __VA_ARGS__); putchar('\n'); } }
+  #define   FATAL_MSG(format, ...) { fprintf(stderr, "\nFATAL - In " format, ## __VA_ARGS__); fflush(stdout); terminate(); }
+  #define   ERROR_MSG(format, ...) { fprintf(stderr, "\nERROR - In " format, ## __VA_ARGS__); }
+  #define WARNING_MSG(format, ...) { fprintf(stderr, "\nWARNING - In " format, ## __VA_ARGS__); }
+  #define    INFO_MSG(format, ...) { if (verbose) { fprintf(stderr,    "\nINFO - In " format, ## __VA_ARGS__); } }
 
-  #define   FATAL(a, b) { fprintf(stderr,  "\nFATAL - In %s: %s.\n", a, b); fflush(stdout); terminate(); }
-  #define   ERROR(a, b)   fprintf(stderr,  "\nERROR - In %s: %s.\n", a, b)
-  #define WARNING(a, b)   fprintf(stderr,"\nWARNING - In %s: %s.\n", a, b)
-  #define    INFO(a, b)   if (verbose) { fprintf(stderr, "\nINFO - In %s: %s.\n", a, b); }
+  #define   FATAL(a, b) { fprintf(stderr,  "\nFATAL - In %s: %s.", a, b); fflush(stdout); terminate(); }
+  #define   ERROR(a, b)   fprintf(stderr,  "\nERROR - In %s: %s.", a, b)
+  #define WARNING(a, b)   fprintf(stderr,"\nWARNING - In %s: %s.", a, b)
+  #define    INFO(a, b)   if (verbose) { fprintf(stderr, "\nINFO - In %s: %s.", a, b); }
 
   #define TYPE_ERROR(proc, exp) FATAL(proc, "Expecting \"" exp "\"")
   #define EXPECT(test, proc, exp) { if (!(test)) { fprintf(stderr, "\nAt [%p]: ", (void *)(last_pc.c - program)); TYPE_ERROR(proc, exp); } }

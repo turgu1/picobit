@@ -1,5 +1,5 @@
 // primitives-esp32
-// Builtin Indexes: 42
+// Builtin Indexes: 42 .. 43
 
 #include "esp32-scheme-vm.h"
 #include "vm-arch.h"
@@ -8,22 +8,36 @@
 
 #include "primitives.h"
 
-#include "driver/gpio.h"
+#if ESP32
+  #include "driver/gpio.h"
+  #include "esp_wifi.h"
 
-#define IS_PAIR(p) ((IN_RAM(p) && RAM_IS_PAIR(p)) || (IN_ROM(p) && ROM_IS_PAIR(p)))
-#define GET_CAR(p) IN_RAM(p) ? RAM_GET_CAR(p) : ROM_GET_CAR(p)
-#define GET_CDR(p) IN_RAM(p) ? RAM_GET_CDR(p) : ROM_GET_CDR(p)
+  #define E32(instr) instr
+  #define WKS(instr)
 
-#define GET_NEXT_VALUE(test, func, msg) \
-  EXPECT((reg2 != NIL), func, msg); \
-  reg3 = GET_CAR(reg2);    \
-  a1   = decode_int(reg3); \
-  reg2 = GET_CDR(reg2);    \
-  EXPECT(test, func, msg)
+  cell_p check(esp_err_t result) { return result == ESP_OK ? TRUE : FALSE; }
+#endif
+
+#if WORKSTATION
+  #define E32(instr)
+  #define WKS(instr) instr
+#endif
+
+#define GET_NEXT_VALUE(test, func, msg)           \
+  EXPECT(IS_PAIR(reg2), func, "[i] " msg);        \
+  reg3 = GET_CAR(reg2);                           \
+  EXPECT(IS_SMALL_INT(reg3), func, "[ii] " msg ); \
+  a1   = decode_int(reg3);                        \
+  reg2 = GET_CDR(reg2);                           \
+  EXPECT(test, func, "[iii] " msg)
+
+#define RESET    99
+#define WATCHDOG  0
 
 #define INIT      0
 #define READ      1
 #define WRITE     2
+#define WAKEUP    3
 
 #define PULL_UP   0
 #define PULL_DOWN 1
@@ -34,75 +48,121 @@
 #define LOW       0
 #define HIGH      1
 
-// (GPIO operation (params ...))
-PRIMITIVE(GPIO, gpio, 2, 42)
-{
-  bool result = false;
-  gpio_config_t io_conf;
+#define DISABLE   0
+#define ENABLE    1
 
-  EXPECT(IS_PAIR(reg2), "gpio.1", "parameters list");
+extern void show(cell_p p);
+
+// (SYS operation (params ...))
+PRIMITIVE(#%sys, sys, 2, 43)
+{
+  EXPECT(IS_SMALL_INT(reg1), "sys.0", "operation as small int");
   a1 = decode_int(reg1);
+
+  switch (a1) {
+    case RESET:
+      WKS(terminate());
+      break;
+
+    case WATCHDOG:
+      break;
+
+    default:
+      ERROR_MSG("sys.15: Unknown operation: %d", a1);
+      reg1 = FALSE;
+      break;
+  }
+}
+
+// (GPIO operation (params ...))
+PRIMITIVE(#%gpio, gpio, 2, 42)
+{
+  E32(gpio_config_t io_conf);
+
+  EXPECT(IS_SMALL_INT(reg1), "gpio.0", "operation as small int");
+  a1 = decode_int(reg1);
+
   switch (a1) {
     case INIT:      // Init a GPIO bit, params: Pin# <Input|Output> [Pull-Up|Pull-Down|NIL]
-      INFO_MSG("GPIO Init");
-      io_conf.intr_type = GPIO_PIN_INTR_DISABLE;
-
+      E32(io_conf.intr_type = GPIO_PIN_INTR_DISABLE);
+      EXPECT(IS_PAIR(reg2), "gpio.1", "parameters list");
       // Pin #
       GET_NEXT_VALUE((a1 >= 0) && (a1 <= 39), "gpio.2", "Pin# in range 0..39");
-      io_conf.pin_bit_mask = 1ULL << a1;
+      E32(io_conf.pin_bit_mask = 1ULL << a1);
+      a2 = a1;
 
       // Input | Output
       GET_NEXT_VALUE((a1 == OUTPUT) || (a1 == INPUT), "gpio.3", "Input | Output");
-      io_conf.pin_bit_mask = (a1 == OUTPUT) ? GPIO_OUTPUT_PIN_SEL : GPIO_INPUT_PIN_SEL;
+      E32(io_conf.pin_bit_mask = (a1 == OUTPUT) ? GPIO_OUTPUT_PIN_SEL : GPIO_INPUT_PIN_SEL);
+      a3 = a1;
 
       // Pull_Up | Pull_Down | NIL
-      io_conf.pull_down_en = 0;
-      io_conf.pull_up_en   = 0;
       if (reg2 != NIL) {
         GET_NEXT_VALUE((reg3 == NIL) || (a1 == PULL_UP) || (a1 == PULL_DOWN), "gpio.4", "Pull-Up | Pull-Down | ()");
         if (a1 == PULL_UP) {
-          io_conf.pull_up_en   = 1;
+          E32(io_conf.pull_up_en   = 1);
+          E32(io_conf.pull_down_en = 0);
         }
-        else {
-          io_conf.pull_down_en = 1;
+        else if (a1 == PULL_DOWN) {
+          E32(io_conf.pull_down_en = 1);
+          E32(io_conf.pull_up_en   = 0);
         }
       }
+      else {
+        a1 = -1;
+      }
 
-      gpio_config(&io_conf);
-      reg3 = NIL;
-      reg1 = TRUE;
-      result = true;
+      E32(reg1 = check(gpio_config(&io_conf)));
+      INFO_MSG("gpio: Init Pin %d %s %s", a2, a3 == INPUT ? "Input" : "Output", a1 == -1 ? "" : (a1 == PULL_UP ? "Pull-Up" : "Pull-Down"));
       break;
 
-    case READ:      // read value from IO bit
-      INFO_MSG("GPIO Read");
+    case READ:      // read value from GPIO bit
       if (IS_PAIR(reg2)) {
         GET_NEXT_VALUE((a1 >= 0) && (a1 <= 39), "gpio.5", "Pin# in range 0..39");
       }
       else {
+        EXPECT(IS_SMALL_INT(reg2), "gpio.6", "Pin# in range 0..39");
         a1 = decode_int(reg2);
-        EXPECT((a1 >= 0) && (a1 <= 39), "gpio.6", "Pin# in range 0..39");
-
+        EXPECT((a1 >= 0) && (a1 <= 39), "gpio.7", "Pin# in range 0..39");
       }
-      reg1 = encode_int(gpio_get_level(a1));
-      result = true;
+      INFO_MSG("gpio: Read Pin %d", a1);
+      E32(reg1 = encode_int(gpio_get_level(a1)));
+      WKS(reg1 = ZERO);
       break;
 
-    case WRITE:      // read value from IO bit
-      INFO_MSG("GPIO Write");
-      GET_NEXT_VALUE((a1 >= 0) && (a1 <= 39), "gpio.7", "Pin# in range 0..39");
+    case WRITE:      // write value to GPIO bit
+      EXPECT(IS_PAIR(reg2), "gpio.8", "parameters list");
+      GET_NEXT_VALUE((a1 >= 0) && (a1 <= 39), "gpio.9", "Pin# in range 0..39");
       a2 = a1;
-      GET_NEXT_VALUE((a1 == LOW) && (a1 = HIGH), "gpio.8", "Low | High");
-      gpio_set_level(a2, a1);
-      reg1 = NIL;
-      result = true;
+      GET_NEXT_VALUE((a1 == LOW) || (a1 == HIGH), "gpio.10", "Low | High");
+      E32(reg1 = check(gpio_set_level(a2, a1)));
+      INFO_MSG("gpio: Write %d to pin %d", a1, a2);
+      WKS(reg1 = TRUE);
+      break;
+
+    case WAKEUP:
+      EXPECT(IS_PAIR(reg2), "gpio.11", "parameters list");
+      GET_NEXT_VALUE((a1 == ENABLE) || (a1 == DISABLE), "gpio.12", "Enable | Disable");
+      a2 = a1;
+      GET_NEXT_VALUE((a1 >= 0) && (a1 <= 39), "gpio.13", "Pin# in range 0..39");
+      a3 = a1;
+      if (a2 == ENABLE) {
+        GET_NEXT_VALUE((a1 == LOW) || (a1 == HIGH), "gpio.14", "Low | High");
+        E32(reg1 = check(gpio_wakeup_enable(a3, a1 == LOW ? GPIO_INTR_LOW_LEVEL : GPIO_INTR_HIGH_LEVEL)));
+        INFO_MSG("gpio: WakeUp %s on Pin %d %s", a2 == ENABLE ? "Enable" : "Disable", a3, a1 == LOW ? "Low" : "High");
+      }
+      else {
+        E32(reg1 = check(gpio_wakeup_disable(a3)));
+        INFO_MSG("gpio: WakeUp Disable on Pin %d", a3);
+      }
+      WKS(reg1 = TRUE);
       break;
 
     default:
-      ERROR_MSG("gpio.3: Unknown operation: %d", a1);
+      ERROR_MSG("gpio.15: Unknown operation: %d", a1);
+      reg1 = FALSE;
       break;
   }
 
   reg2 = reg3 = NIL;
-  if (!result) reg1 = FALSE;
 }
