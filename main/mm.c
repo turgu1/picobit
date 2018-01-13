@@ -435,7 +435,6 @@ bool mm_init(uint8_t * program)
     vector_heap_size = VECTOR_HEAP_ALLOCATED;
 
   #else // ESP32
-    // Todo: Memory Initialisation code for ESP32
 
     uint32_t byte_size = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
 
@@ -443,7 +442,7 @@ bool mm_init(uint8_t * program)
     if ((ram_heap_data = (cell_data_ptr) heap_caps_calloc(ram_heap_size, sizeof(cell_data), MALLOC_CAP_8BIT))  == NULL) return false;
     if ((ram_heap_flags = (cell_flags_ptr) heap_caps_calloc(ram_heap_size, sizeof(cell_flags), MALLOC_CAP_8BIT))  == NULL) return false;
 
-    byte_size = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
+    byte_size = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT) - 20000;
     vector_heap_size = byte_size / sizeof(cell);
     if ((vector_heap = (cell_ptr) heap_caps_calloc(vector_heap_size, sizeof(cell), MALLOC_CAP_8BIT)) == NULL) return false;
   #endif

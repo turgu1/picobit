@@ -39,11 +39,14 @@ extern void terminate();
   #include "esp_spi_flash.h"
   #include "esp_heap_caps.h"
 
+  #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+  #include "esp_log.h"
+
   #define STATS     1
   #define DEBUGGING 1
   #define TRACING   1
   #define TESTS     0
-  #define VERBOSE   true
+  #define VERBEUX   true
 
   #define E32(instr) instr
   #define WKS(instr)
@@ -53,11 +56,32 @@ extern void terminate();
 
 #define STATISTICS (STATS || DEBUGGING)
 
+#if TRACING
+  #if WORKSTATION
+    #define TRACE(a, ...)   { fprintf(stderr, "[%p]", (void *) (last_pc.c - program)); fprintf(stderr, a, __VA_ARGS__); }
+  #else
+    #define TRACE(a, ...)
+  #endif
+#else
+  #define TRACE(a, ...)
+#endif
+
 #if DEBUGGING
-  #define   FATAL(a, ...)   {   fputs("\nFATAL - In " a ": ", stderr); fprintf(stderr, __VA_ARGS__); terminate(); }
-  #define   ERROR(a, ...)   {   fputs("\nERROR - In " a ": ", stderr); fprintf(stderr, __VA_ARGS__); }
-  #define WARNING(a, ...)   { fputs("\nWARNING - In " a ": ", stderr); fprintf(stderr, __VA_ARGS__); }
-  #define    INFO(a, ...)   {    fputs("\nINFO - In " a ": ", stderr); fprintf(stderr, __VA_ARGS__); }
+  #if WORKSTATION
+    #define   FATAL(a, ...)   {     fputs("\nFATAL - In " a ": ", stderr); fprintf(stderr, __VA_ARGS__); terminate(); }
+    #define   ERROR(a, ...)   {     fputs("\nERROR - In " a ": ", stderr); fprintf(stderr, __VA_ARGS__); }
+    #define WARNING(a, ...)   {   fputs("\nWARNING - In " a ": ", stderr); fprintf(stderr, __VA_ARGS__); }
+    #define    INFO(a, ...)   {      fputs("\nINFO - In " a ": ", stderr); fprintf(stderr, __VA_ARGS__); }
+    #define   DEBUG(a, ...)   {     fputs("\nDEBUG - In " a ": ", stderr); fprintf(stderr, __VA_ARGS__); }
+    #define VERBOSE(a, ...)   {   fputs("\nVERBOSE - In " a ": ", stderr); fprintf(stderr, __VA_ARGS__); }
+  #else
+    #define   FATAL(a, ...) { ESP_LOGE(a, __VA_ARGS__); terminate(); }
+    #define   ERROR(a, ...)   ESP_LOGE(a, __VA_ARGS__)
+    #define WARNING(a, ...)   ESP_LOGW(a, __VA_ARGS__)
+    #define    INFO(a, ...)   ESP_LOGI(a, __VA_ARGS__)
+    #define   DEBUG(a, ...)   ESP_LOGD(a, __VA_ARGS__)
+    #define VERBOSE(a, ...)   ESP_LOGV(a, __VA_ARGS__)
+  #endif
 
   #define TYPE_ERROR(proc, exp) FATAL(proc, "Expecting \"" exp "\"")
   #define EXPECT(test, proc, exp) { if (!(test)) { fprintf(stderr, "\nAt [%p]: ", (void *)(last_pc.c - program)); TYPE_ERROR(proc, exp); } }
@@ -65,10 +89,13 @@ extern void terminate();
   #define   FATAL(a, b) terminate()
   #define   ERROR(a, b)
   #define WARNING(a, b)
+  #define   DEBUG(a, b)
   #define    INFO(a, b)
+  #define VERBOSE(a, b)
 
+  #define      TRACE(a, ...)
   #define TYPE_ERROR(proc, exp)
-  #define EXPECT(test, proc, exp)
+  #define     EXPECT(test, proc, exp)
 #endif
 
 #pragma pack(1)

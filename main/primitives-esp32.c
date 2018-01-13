@@ -9,6 +9,7 @@
 #include "primitives.h"
 
 #if ESP32
+  #include <string.h>
   #include "driver/gpio.h"
   #include "esp_wifi.h"
   #include "esp_log.h"
@@ -136,7 +137,7 @@ PRIMITIVE(#%sys, sys, 2, 43)
       GET_NEXT_STRING(str1,  20, "sys.", "log tag");
       GET_NEXT_STRING(str2, 120, "sys.", "log message");
       E32(esp_log_write(a1, str1, str2));
-      INFO("SYS", "Log %s for tag %s: %s", level_info[a1].name, str1, str2);
+      WKS(DEBUG("SYS", "Log %s for tag %s: %s", level_info[a1].name, str1, str2));
       reg1 = TRUE;
       break;
 
@@ -144,25 +145,25 @@ PRIMITIVE(#%sys, sys, 2, 43)
       GET_NEXT_VALUE((a1 >= LOG_NONE) && (a1 <= LOG_ERROR), "sys.3", "One of Error, Warning, Info, Verbose, Debug or None");
       GET_NEXT_STRING(str1, 20, "sys.", "log tag");
       E32(esp_log_level_set(str1, level_info[a1].level));
-      INFO("SYS", "Set Log Level %s for tag %s", level_info[a1].name, str1);
+      DEBUG("SYS", "Set Log Level %s for tag %s", level_info[a1].name, str1);
       reg1 = TRUE;
       break;
 
     case WIFI_INIT:
-      GET_NEXT_STRING(str1, 50,  "sys.", "SSID"    );
-      GET_NEXT_STRING(str2, 120, "sys.", "password");
+      GET_NEXT_STRING(str1, 32, "sys.", "SSID"    );
+      GET_NEXT_STRING(str2, 64, "sys.", "password");
       #if ESP32
+        tcpip_adapter_init();
         wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
         ESP_ERROR_CHECK(esp_wifi_init(&cfg));
         ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
         ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
-        wifi_config_t sta_config = {
-          .sta = {
-            .ssid      = str1,
-            .password  = str2,
-            .bssid_set = false
-          }
-        };
+        wifi_config_t sta_config;
+
+        strcpy((char *) sta_config.sta.ssid,     str1);
+        strcpy((char *) sta_config.sta.password, str2);
+        sta_config.sta.bssid_set = false;
+
         ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &sta_config));
         ESP_ERROR_CHECK(esp_wifi_start());
         ESP_ERROR_CHECK(result = esp_wifi_connect());
@@ -170,27 +171,27 @@ PRIMITIVE(#%sys, sys, 2, 43)
       #else
         reg1 = TRUE;
       #endif
-      INFO("SYS", "Wifi Init with SSID: %s", str1);
+      DEBUG("SYS", "WiFi Init with SSID: %s, result: %s", str1, reg1 == TRUE ? "OK" : "ERROR");
       break;
 
     case WIFI_CONNECT:
       E32(ESP_ERROR_CHECK(result = esp_wifi_connect()));
       E32(reg1 = result == ESP_OK ? TRUE : FALSE);
       WKS(reg1 = TRUE);
-      INFO("SYS", "Wifi Connect");
+      DEBUG("SYS", "WiFi Connect, result: %s", reg1 == TRUE ? "OK" : "ERROR");
       break;
 
     case WIFI_DISCONNECT:
       E32(ESP_ERROR_CHECK(result = esp_wifi_disconnect()));
       E32(reg1 = result == ESP_OK ? TRUE : FALSE);
       WKS(reg1 = TRUE);
-      INFO("SYS", "Wifi Disconnect");
+      DEBUG("SYS", "WiFi Disconnect, result: %s", reg1 == TRUE ? "OK" : "ERROR");
       break;
 
     case WIFI_CONNECTED:
-      E32(reg1 = wifi_connected ? TRUE : FALSE);
+      E32(reg1 = (wifi_connected ? TRUE : FALSE));
       WKS(reg1 = TRUE);
-      INFO("SYS", "Wifi is %sconnected", reg1 == TRUE ? "" : "not ");
+      DEBUG("SYS", "WiFi is %sconnected", reg1 == TRUE ? "" : "not ");
       break;
 
     default:
@@ -239,7 +240,7 @@ PRIMITIVE(#%gpio, gpio, 2, 42)
       }
 
       E32(reg1 = check(gpio_config(&io_conf)));
-      INFO("GPIO", "Init Pin %d %s %s", a2, a3 == INPUT ? "Input" : "Output", a1 == -1 ? "" : (a1 == PULL_UP ? "Pull-Up" : "Pull-Down"));
+      DEBUG("GPIO", "Init Pin %d %s %s", a2, a3 == INPUT ? "Input" : "Output", a1 == -1 ? "" : (a1 == PULL_UP ? "Pull-Up" : "Pull-Down"));
       break;
 
     case READ:      // read value from GPIO bit
@@ -251,7 +252,7 @@ PRIMITIVE(#%gpio, gpio, 2, 42)
         a1 = decode_int(reg2);
         EXPECT((a1 >= 0) && (a1 <= 39), "gpio.7", "Pin# in range 0..39");
       }
-      INFO("GPIO", "Read Pin %d", a1);
+      DEBUG("GPIO", "Read Pin %d", a1);
       E32(reg1 = encode_int(gpio_get_level(a1)));
       WKS(reg1 = ZERO);
       break;
@@ -262,7 +263,7 @@ PRIMITIVE(#%gpio, gpio, 2, 42)
       a2 = a1;
       GET_NEXT_VALUE((a1 == LOW) || (a1 == HIGH), "gpio.10", "Low | High");
       E32(reg1 = check(gpio_set_level(a2, a1)));
-      INFO("GPIO", "Write %d to pin %d", a1, a2);
+      DEBUG("GPIO", "Write %d to pin %d", a1, a2);
       WKS(reg1 = TRUE);
       break;
 
@@ -275,11 +276,11 @@ PRIMITIVE(#%gpio, gpio, 2, 42)
       if (a2 == ENABLE) {
         GET_NEXT_VALUE((a1 == LOW) || (a1 == HIGH), "gpio.14", "Low | High");
         E32(reg1 = check(gpio_wakeup_enable(a3, a1 == LOW ? GPIO_INTR_LOW_LEVEL : GPIO_INTR_HIGH_LEVEL)));
-        INFO("GPIO", "WakeUp %s on Pin %d %s", a2 == ENABLE ? "Enable" : "Disable", a3, a1 == LOW ? "Low" : "High");
+        DEBUG("GPIO", "WakeUp %s on Pin %d %s", a2 == ENABLE ? "Enable" : "Disable", a3, a1 == LOW ? "Low" : "High");
       }
       else {
         E32(reg1 = check(gpio_wakeup_disable(a3)));
-        INFO("GPIO", "WakeUp Disable on Pin %d", a3);
+        DEBUG("GPIO", "WakeUp Disable on Pin %d", a3);
       }
       WKS(reg1 = TRUE);
       break;

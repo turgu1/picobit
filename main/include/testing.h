@@ -15,11 +15,11 @@
   PUBLIC void EXPECT_TRUE(bool val, char * info, ...);
 #endif
 
-#if TRACING
-  PUBLIC void TRACE(char * format, ...);
-#else
-  #define TRACE(format, ...)
-#endif
+// #if TRACING
+//   PUBLIC void TRACE(char * format, ...);
+// #else
+//   #define TRACE(format, ...)
+// #endif
 
 #undef PUBLIC
 #endif

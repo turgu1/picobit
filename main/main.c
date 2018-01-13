@@ -167,12 +167,12 @@
   {
     switch(event->event_id) {
       case SYSTEM_EVENT_STA_CONNECTED:
-        ESP_LOGI("SYS", "WiFi connected");
+        INFO("SYS", "WiFi connected");
         wifi_connected = true;
         break;
 
       case SYSTEM_EVENT_STA_DISCONNECTED:
-        ESP_LOGI("SYS", "WiFi disconnected");
+        INFO("SYS", "WiFi disconnected");
         wifi_connected = false;
         break;
 
@@ -193,7 +193,7 @@
 
     ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
 
-    verbose = VERBOSE;
+    verbose = VERBEUX;
 
     program = program_bin_start;
     max_addr = program_bin_end - program_bin_start;
