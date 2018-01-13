@@ -188,12 +188,8 @@ cell_p encode_int(int32_t val)
 void string2cstring(cell_p p, char *str, uint16_t length)
 {
   EXPECT(IS_STRING(p), "string2cstring", "string");
-  if (IN_RAM(p)) {
-    p = RAM_STRING_GET_CHARS(p);
-  }
-  else {
-    p = ROM_STRING_GET_CHARS(p);
-  }
+
+  p = IN_RAM(p) ? RAM_STRING_GET_CHARS(p) : ROM_STRING_GET_CHARS(p);
 
   while ((length-- > 1) && (p != NIL)) {
     *str++ = (char) decode_int(GET_CAR(p));

@@ -31,6 +31,9 @@
 ; (SYS WiFi-Disconnect)
 ; (SYS WiFi-Connected?)
 
+(define LOG (lambda (level tag message)
+                    (SYS Log level tag message)))
+
 (define SYS (lambda (op . params)
   (#%sys op params)))
 

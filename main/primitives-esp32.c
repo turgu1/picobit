@@ -16,16 +16,28 @@
 
   cell_p check(esp_err_t result) { return result == ESP_OK ? TRUE : FALSE; }
 
+  #define COLOR(COLOR)  "\033[1;" COLOR "m"
+  #define RESET_COLOR   "\033[0m"
+  #define CBLACK   "30"
+  #define CRED     "31"
+  #define CGREEN   "32"
+  #define CBROWN   "33"
+  #define CBLUE    "34"
+  #define CPURPLE  "35"
+  #define CCYAN    "36"
+
   struct {
     char *name;
     esp_log_level_t level;
+    char letter;
+    char *color;
   } level_info[6] = {
-    { "NONE",    ESP_LOG_NONE    },
-    { "VERBOSE", ESP_LOG_VERBOSE },
-    { "DEBUG",   ESP_LOG_DEBUG   },
-    { "INFO",    ESP_LOG_INFO    },
-    { "WARNING", ESP_LOG_WARN    },
-    { "ERROR",   ESP_LOG_ERROR   }
+    { "NONE",    ESP_LOG_NONE,    'N', COLOR(CBLACK)  },
+    { "VERBOSE", ESP_LOG_VERBOSE, 'V', COLOR(CBLACK)  },
+    { "DEBUG",   ESP_LOG_DEBUG,   'D', COLOR(CPURPLE) },
+    { "INFO",    ESP_LOG_INFO,    'I', COLOR(CGREEN)  },
+    { "WARNING", ESP_LOG_WARN,    'W', COLOR(CBROWN)  },
+    { "ERROR",   ESP_LOG_ERROR,   'E', COLOR(CRED)    }
   };
 #endif
 
@@ -136,7 +148,19 @@ PRIMITIVE(#%sys, sys, 2, 43)
       GET_NEXT_VALUE((a1 >= LOG_VERBOSE) && (a1 <= LOG_ERROR), "sys.2", "One of Error, Warning, Info, Verbose, Debug or None");
       GET_NEXT_STRING(str1,  20, "sys.", "log tag");
       GET_NEXT_STRING(str2, 120, "sys.", "log message");
-      E32(esp_log_write(a1, str1, str2));
+      #if ESP32
+        if (LOG_LOCAL_LEVEL >= level_info[a1].level) {
+          esp_log_write(
+            level_info[a1].level,
+            str1,
+            "%s%c (%d) %s: %s" RESET_COLOR "\n",
+            level_info[a1].color,
+            level_info[a1].letter,
+            esp_log_timestamp(),
+            str1,
+            str2);
+        }
+      #endif
       WKS(DEBUG("SYS", "Log %s for tag %s: %s", level_info[a1].name, str1, str2));
       reg1 = TRUE;
       break;
