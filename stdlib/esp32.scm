@@ -1,6 +1,8 @@
 ;; SYS Definitions
 
 (define Reset          99)
+(define Deep-Sleep     98)
+(define Light-Sleep    97)
 (define Watch-Dog       0)
 (define Sleep           1)
 (define Log             2)
@@ -9,6 +11,8 @@
 (define WiFi-Connect    5)
 (define WiFi-Disconnect 6)
 (define WiFi-Connected? 7)
+(define WiFi-Stop       8)
+(define WiFi-Start      9)
 
 ; Log Levels
 
@@ -22,6 +26,7 @@
 ; System operations:
 ;
 ; (SYS Reset)
+; (SYS Deep-Sleep [wakeUp time is ms])
 ; (SYS Watch-Dog)
 ; (SYS Sleep <duration as ms>)
 ; (SYS Log <level> <tag string> <message string>)

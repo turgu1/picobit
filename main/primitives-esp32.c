@@ -76,41 +76,45 @@
 
 // SYS Definitions
 
-#define RESET      99
-#define WATCHDOG    0
-#define SLEEP       1
-#define LOG         2
-#define LOG_LEVEL   3
-#define WIFI_INIT   4
+#define RESET          99
+#define DEEP_SLEEP     98
+#define LIGHT_SLEEP    97
+#define WATCHDOG        0
+#define SLEEP           1
+#define LOG             2
+#define LOG_LEVEL       3
+#define WIFI_INIT       4
 #define WIFI_CONNECT    5
 #define WIFI_DISCONNECT 6
 #define WIFI_CONNECTED  7
+#define WIFI_STOP       8
+#define WIFI_START      9
 
-#define LOG_ERROR   5
-#define LOG_WARNING 4
-#define LOG_INFO    3
-#define LOG_DEBUG   2
-#define LOG_VERBOSE 1
-#define LOG_NONE    0
+#define LOG_ERROR       5
+#define LOG_WARNING     4
+#define LOG_INFO        3
+#define LOG_DEBUG       2
+#define LOG_VERBOSE     1
+#define LOG_NONE        0
 
 // GPIO Definitions
 
-#define INIT        0
-#define READ        1
-#define WRITE       2
-#define WAKEUP      3
+#define INIT            0
+#define READ            1
+#define WRITE           2
+#define WAKEUP          3
 
-#define PULL_UP     0
-#define PULL_DOWN   1
+#define PULL_UP         0
+#define PULL_DOWN       1
 
-#define OUTPUT      0
-#define INPUT       1
+#define OUTPUT          0
+#define INPUT           1
 
-#define LOW         0
-#define HIGH        1
+#define LOW             0
+#define HIGH            1
 
-#define DISABLE     0
-#define ENABLE      1
+#define DISABLE         0
+#define ENABLE          1
 
 extern void show(cell_p p);
 E32(extern bool wifi_connected);
@@ -132,8 +136,32 @@ PRIMITIVE(#%sys, sys, 2, 43)
       reg1 = NIL;
       break;
 
+    case DEEP_SLEEP:
+      if (reg2 != NIL) {
+        GET_NEXT_VALUE((a1 >= 0) && (a1 <= 8000000), "sys.1", "sleep time <= 30000ms");
+        E32(ESP_ERROR_CHECK(esp_sleep_enable_timer_wakeup(1000UL * a1)));
+        DEBUG("SYS", "WakeUp in %d ms", a1);
+      }
+      esp_wifi_disconnect();
+      esp_wifi_stop();
+      DEBUG("SYS", "Deep Sleep Start");
+      E32(esp_deep_sleep_start());
+      reg1 = TRUE;
+      break;
+
+    case LIGHT_SLEEP:
+      if (reg2 != NIL) {
+        GET_NEXT_VALUE((a1 >= 0) && (a1 <= 8000000), "sys.1", "sleep time <= 30000ms");
+        E32(ESP_ERROR_CHECK(esp_sleep_enable_timer_wakeup(1000UL * a1)));
+        DEBUG("SYS", "WakeUp in %d ms", a1);
+      }
+      DEBUG("SYS", "Deep Sleep Start");
+      E32(esp_light_sleep_start());
+      reg1 = TRUE;
+      break;
+
     case WATCHDOG:
-      E32(vTaskDelay(1));
+      E32(taskYIELD());
       reg1 = TRUE;
       break;
 
@@ -216,6 +244,20 @@ PRIMITIVE(#%sys, sys, 2, 43)
       E32(reg1 = (wifi_connected ? TRUE : FALSE));
       WKS(reg1 = TRUE);
       DEBUG("SYS", "WiFi is %sconnected", reg1 == TRUE ? "" : "not ");
+      break;
+
+    case WIFI_STOP:
+      E32(ESP_ERROR_CHECK(result = esp_wifi_stop()));
+      E32(reg1 = result == ESP_OK ? TRUE : FALSE);
+      WKS(reg1 = TRUE);
+      DEBUG("SYS", "WiFi Stop, result: %s", reg1 == TRUE ? "OK" : "ERROR");
+      break;
+
+    case WIFI_START:
+      E32(ESP_ERROR_CHECK(result = esp_wifi_start()));
+      E32(reg1 = result == ESP_OK ? TRUE : FALSE);
+      WKS(reg1 = TRUE);
+      DEBUG("SYS", "WiFi Start, result: %s", reg1 == TRUE ? "OK" : "ERROR");
       break;
 
     default:

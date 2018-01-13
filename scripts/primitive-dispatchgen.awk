@@ -23,10 +23,12 @@ function primitivegen(primitiveclass, offset) {
       continue;
     }
 
-    if(pr[i, "arguments"] > 3) 	print "            reg4 = pop();"
-    if(pr[i, "arguments"] > 2)	print "            reg3 = pop();"
-    if(pr[i, "arguments"] > 1)	print "            reg2 = pop();"
-    if(pr[i, "arguments"] > 0)	print "            reg1 = pop();"
+    args = pr[i, "arguments"]
+    if (args < 0) args = -args
+    if (args > 3) print "            reg4 = pop();"
+    if (args > 2)	print "            reg3 = pop();"
+    if (args > 1)	print "            reg2 = pop();"
+    if (args > 0)	print "            reg1 = pop();"
 
     print "            primitive_" pr[i, "c_name"] "();"
 

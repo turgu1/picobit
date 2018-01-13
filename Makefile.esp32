@@ -1,3 +1,6 @@
+# Makefile for use with ESP-IDF development environment.
+# Please look at the ESP-IDF documentation for more detail
+
 PROJECT_NAME := picobit-vm
 
 BUILD_DIR_BASE := ./build-esp32

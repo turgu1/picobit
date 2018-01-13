@@ -1,4 +1,5 @@
 # Makefile for a Linux or OSX platform
+# Guy Turcotte December 2017
 
 #Compiler and Linker
 CC          := gcc

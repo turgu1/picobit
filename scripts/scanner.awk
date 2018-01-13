@@ -9,7 +9,7 @@ BEGIN {
 
 /^\W*PRIMITIVE(_UNSPEC|)/ {
 
-	match($0, /\([ \t]*(.+?)[ \t]*,[ \t]*(\w+)[ \t]*,[ \t]*(\w+)[ \t]*,[ \t]*(\w+)[ \t]*\)/, opts)
+	match($0, /\([ \t]*(.+?)[ \t]*,[ \t]*(\w+)[ \t]*,[ \t]*([\-]?\w+)[ \t]*,[ \t]*(\w+)[ \t]*\)/, opts)
 
   idx = strtonum(opts[4])
 

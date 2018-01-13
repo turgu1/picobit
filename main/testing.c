@@ -54,18 +54,3 @@ void conduct_tests()
 }
 
 #endif
-
-#if 0 // TRACING
-extern void show (cell_p o);
-
-void TRACE(char * format, ...)
-{
-  va_list ap;
-  if (trace) {
-    va_start(ap, format);
-    fprintf(stderr, "[%p]", (void *) (last_pc.c - program));
-    vfprintf(stderr, format, ap);
-    fflush(stdout);
-  }
-}
-#endif

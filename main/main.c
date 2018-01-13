@@ -51,16 +51,17 @@
       #if WORKSTATION
         INFO("terminate", "Max GC Duration: %10.7f Sec.", max_gc_duration);
       #endif
-      if (verbose) fputc('\n', stderr);
     #endif
 
-    if (!keep_running) fprintf(stderr, "\nInterrupted.\n");
+    if (!keep_running) fprintf(stderr, "\nInterrupted.");
+
+    fputc('\n', stderr);
 
     fflush(stderr);
     fflush(stdout);
     kb_restore();
 
-    exit(1);
+    exit(0);
   }
 
   void usage(char * exename)

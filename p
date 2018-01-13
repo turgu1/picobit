@@ -1,6 +1,8 @@
 #!/usr/bin/env racket
 #lang racket
 
+;; Tool to compile and execute a program on the workstation
+
 (define (usage)
   (printf "usage: p path/to/file.scm\n")
   (exit 1))

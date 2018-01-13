@@ -13,6 +13,7 @@ Thumbs.db
 sdkconfig
 sdkconfig.old
 
+*.hex
 test.hex
 test.scm
 test.bin

@@ -58,7 +58,7 @@ extern void terminate();
 
 #if TRACING
   #if WORKSTATION
-    #define TRACE(a, ...)   { fprintf(stderr, "[%p]", (void *) (last_pc.c - program)); fprintf(stderr, a, __VA_ARGS__); }
+    #define TRACE(a, ...)   { if (trace) { fprintf(stderr, "\n[%p]", (void *) (last_pc.c - program)); fprintf(stderr, a, __VA_ARGS__); } }
   #else
     #define TRACE(a, ...)
   #endif

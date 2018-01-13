@@ -110,7 +110,7 @@ documented):
    * execute the following command:
 
     ```
-      $ git clone https://github.com/turgu1/esp32-scheme-vm.git
+      $ git clone https://github.com/turgu1/picobit.git
     ```
 
 3. Compile the workstation version of the compiler, picobit-vm and hex2bin
@@ -136,11 +136,16 @@ following commands:
       $ ./picobit-vm fibo.hex
     ```
 
+You can get the same result using the following command:
+
+    ```
+      $ ./p fibo.scm
+    ```
+
 5. Compile and run the program on a ESP32 platform. For this, you will need
 an ESP32 electronic circuit **hooked to your computer through a USB serial port**.
 The author uses a ESP-WROOM-32 development board (Nodemcu) similar to the
-one offered by [amazon](https://www.amazon.com/HiLetgo-ESP-WROOM-32-Development-Microcontroller-Integrated/dp/B0718T232Z/ref=sr_1_1?ie=UTF8&qid=1515534535&sr=8-1&keywords=esp32+nodemcu). The example here will use the
-`fibo.scm` program compiled in the preceding step.
+one offered by [amazon](https://www.amazon.com/HiLetgo-ESP-WROOM-32-Development-Microcontroller-Integrated/dp/B0718T232Z/ref=sr_1_1?ie=UTF8&qid=1515534535&sr=8-1&keywords=esp32+nodemcu). The example here will use the `fibo.scm` program compiled in the preceding step.
 
    * Configure ESP-IDF to identify the USB port on which the development board is
      connected. Use the following command:
@@ -161,6 +166,13 @@ one offered by [amazon](https://www.amazon.com/HiLetgo-ESP-WROOM-32-Development-
 
      ```
        $ cp fibo.bin main/program.bin
+     ```
+
+     You can also produce the binary from the scheme source code with the
+     following command. The binary will be placed in main/program.bin:
+
+     ```
+       $ ./pb filo.scm
      ```
 
    * Now, we compile and burn the code in the ESP32. The first time picobit-vm
