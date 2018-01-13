@@ -55,7 +55,7 @@ bool read_hex_file(char * filename, uint8_t * buffer, int size)
   bool     error;
 
   if ((f = fopen(filename, "r")) == NULL) {
-    ERROR_MSG("read_hex_file: Unable to open file %s.", filename);
+    ERROR("read_hex_file", "Unable to open file %s.", filename);
     return false;
   }
 
@@ -64,7 +64,7 @@ bool read_hex_file(char * filename, uint8_t * buffer, int size)
 
   while (!feof(f) && !completed && !error) {
     if (fgets(line, 99, f) == NULL) {
-      ERROR_MSG("read_hex_file: I/O Error reading file %s.", filename);
+      ERROR("read_hex_file", "I/O Error reading file %s.", filename);
       return false;
     }
     ptr = line;
@@ -90,7 +90,7 @@ bool read_hex_file(char * filename, uint8_t * buffer, int size)
           break;
 
         default :
-          WARNING_MSG("read_hex_file: Unsupported record type: %d.", type);
+          WARNING("read_hex_file", "Unsupported record type: %d.", type);
           while (len--) hex2byte(&ptr);
           break;
       }
@@ -110,7 +110,7 @@ bool read_hex_file(char * filename, uint8_t * buffer, int size)
   fclose (f);
 
   #if DEBUGGING
-    INFO_MSG("read_hex_file: Load size: %u", max_addr);
+    INFO("read_hex_file", "Load size: %u", max_addr);
   #endif
 
   // Little endian...

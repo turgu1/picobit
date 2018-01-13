@@ -54,31 +54,14 @@ extern void terminate();
 #define STATISTICS (STATS || DEBUGGING)
 
 #if DEBUGGING
-  #define DEBUG(format, ...) fprintf(stderr, format, ## __VA_ARGS__)
-#else
-  #define DEBUG(format, ...)
-#endif
-
-#if DEBUGGING
-  #define   FATAL_MSG(format, ...) { fprintf(stderr, "\nFATAL - In " format, ## __VA_ARGS__); fflush(stdout); terminate(); }
-  #define   ERROR_MSG(format, ...) { fprintf(stderr, "\nERROR - In " format, ## __VA_ARGS__); }
-  #define WARNING_MSG(format, ...) { fprintf(stderr, "\nWARNING - In " format, ## __VA_ARGS__); }
-  #define    INFO_MSG(format, ...) { if (verbose) { fprintf(stderr,    "\nINFO - In " format, ## __VA_ARGS__); } }
-
-  #define   FATAL(a, b) { fprintf(stderr,  "\nFATAL - In %s: %s.", a, b); fflush(stdout); terminate(); }
-  #define   ERROR(a, b)   fprintf(stderr,  "\nERROR - In %s: %s.", a, b)
-  #define WARNING(a, b)   fprintf(stderr,"\nWARNING - In %s: %s.", a, b)
-  #define    INFO(a, b)   if (verbose) { fprintf(stderr, "\nINFO - In %s: %s.", a, b); }
+  #define   FATAL(a, ...)   {   fputs("\nFATAL - In " a ": ", stderr); fprintf(stderr, __VA_ARGS__); terminate(); }
+  #define   ERROR(a, ...)   {   fputs("\nERROR - In " a ": ", stderr); fprintf(stderr, __VA_ARGS__); }
+  #define WARNING(a, ...)   { fputs("\nWARNING - In " a ": ", stderr); fprintf(stderr, __VA_ARGS__); }
+  #define    INFO(a, ...)   {    fputs("\nINFO - In " a ": ", stderr); fprintf(stderr, __VA_ARGS__); }
 
   #define TYPE_ERROR(proc, exp) FATAL(proc, "Expecting \"" exp "\"")
   #define EXPECT(test, proc, exp) { if (!(test)) { fprintf(stderr, "\nAt [%p]: ", (void *)(last_pc.c - program)); TYPE_ERROR(proc, exp); } }
-  #define MARK(c) { if (verbose) { fputc(c, stderr); fflush(stderr); } }
 #else
-  #define   FATAL_MSG(format, ...) terminate()
-  #define   ERROR_MSG(format, ...)
-  #define WARNING_MSG(format, ...)
-  #define    INFO_MSG(format, ...)
-
   #define   FATAL(a, b) terminate()
   #define   ERROR(a, b)
   #define WARNING(a, b)
@@ -86,7 +69,6 @@ extern void terminate();
 
   #define TYPE_ERROR(proc, exp)
   #define EXPECT(test, proc, exp)
-  #define MARK(c)
 #endif
 
 #pragma pack(1)

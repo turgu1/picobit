@@ -240,7 +240,7 @@ void return_to_free_list(cell_p p)
 
 void mm_gc()
 {
-  // INFO_MSG("mm_gc: Garbage collection Started");
+  // INFO("mm_gc", "Garbage collection Started");
   E32(taskYIELD());
 
   #if STATISTICS
@@ -276,14 +276,14 @@ void mm_gc()
 
   #if DEBUGGING
     if ((used_cells_count + free_cells_count) != ram_heap_size) {
-      WARNING_MSG(
-        "mm_gc: HEAP FRAGMENTATION (heap_size: %d, total: %d)",
+      WARNING(
+        "mm_gc", "HEAP FRAGMENTATION (heap_size: %d, total: %d)",
         ram_heap_size,
         used_cells_count + free_cells_count);
     }
   #endif
 
-  // INFO_MSG("mm_gc: Garbage Collection Completed");
+  // INFO("mm_gc", "Garbage Collection Completed");
 }
 
 /**
@@ -350,7 +350,7 @@ cell_p mm_new_vector_cell(uint16_t length, cell_p from)
 
   if ((vector_heap_size - vector_free_cells) < length) {
 
-    INFO_MSG("mm_new_vector_cell: Vector Space compaction\n");
+    INFO("mm_new_vector_cell", "Vector Space compaction\n");
 
     mm_gc ();
     mm_compact_vector_space();
@@ -378,7 +378,7 @@ cell_p mm_new_vector_cell(uint16_t length, cell_p from)
 cell_p mm_new_ram_cell()
 {
   if (free_cells == NIL) {
-    // INFO_MSG("Free Cells Allocated since last GC: %d\n", free_allocated_count);
+    // INFO("new_ram_cell", "Free Cells Allocated since last GC: %d\n", free_allocated_count);
     mm_gc();
     if (free_cells == NIL) {
       FATAL("mm_gc", "MEMORY EXHAUSTED!!");
@@ -475,7 +475,7 @@ bool mm_init(uint8_t * program)
 
   if (!check_free_list(ram_heap_size)) return false;
 
-  INFO_MSG("mm_init: Globals Size: %u; ROM Constants Size: %u", program[3], program[2]);
+  INFO("mm_init", "Globals Size: %u; ROM Constants Size: %u", program[3], program[2]);
 
   return true;
 }

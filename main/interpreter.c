@@ -59,11 +59,11 @@ uint8_t prepare_arguments(int8_t nbr_args)
       entry = RAM_GET_CLOSURE_ENTRY_POINT(reg1);
     }
     else {
-      FATAL_MSG("prepare_arguments: Expected closure cell at %d.", reg1);
+      FATAL("prepare_arguments", "Expected closure cell at %d.", reg1);
     }
   }
   else {
-    FATAL_MSG("prepare_arguments: Closure on TOS not in RAM: %d.", reg1);
+    FATAL("prepare_arguments", "Closure on TOS not in RAM: %d.", reg1);
   }
 
   // Retrieve number of arguments expected in the procedure entry point
@@ -76,7 +76,7 @@ uint8_t prepare_arguments(int8_t nbr_args)
 
   if ((nbr_params & 0x80) == 0) {
     if (nbr_args != nbr_params) {
-      ERROR_MSG("prepare_arguments: Wrong number of arguments (%d vs %d).", nbr_args, nbr_params);
+      ERROR("prepare_arguments", "Wrong number of arguments (%d vs %d).", nbr_args, nbr_params);
     }
   }
   else {
@@ -160,7 +160,7 @@ void interpreter()
   while (keep_running) {
     #if DEBUGGING
       if (pc.c >= (program + max_addr)) {
-        FATAL_MSG("Interpreter reached an non-program location: %d\n", (int) (pc.c - program));
+        FATAL("interpreter", "Reached an non-program location: %d\n", (int) (pc.c - program));
       }
     #endif
     #if TRACING

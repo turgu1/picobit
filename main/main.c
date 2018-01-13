@@ -47,9 +47,9 @@
   void terminate()
   {
     #if STATISTICS
-      INFO_MSG("terminate: GC Processing Count: %d.", gc_call_counter);
+      INFO("terminate", "GC Processing Count: %d.", gc_call_counter);
       #if WORKSTATION
-        INFO_MSG("terminate: Max GC Duration: %10.7f Sec.", max_gc_duration);
+        INFO("terminate", "Max GC Duration: %10.7f Sec.", max_gc_duration);
       #endif
       if (verbose) fputc('\n', stderr);
     #endif
@@ -149,6 +149,10 @@
 
 #if ESP32
 
+  #include "nvs_flash.h"
+  #include "esp_event.h"
+  #include "esp_event_loop.h"
+
   // File component.mk contains an entry called COMPONENT_EMBED_FILES that
   // permit the integration of the binary code produced with the PicoBit compiler.
   // As the compiler produce an IntelHex file, it has to be translated to
@@ -157,9 +161,37 @@
   extern const uint8_t program_bin_start[] asm("_binary_program_bin_start");
   extern const uint8_t program_bin_end[]   asm("_binary_program_bin_end");
 
+  bool wifi_connected = false;
+
+  esp_err_t event_handler(void *ctx, system_event_t *event)
+  {
+    switch(event->event_id) {
+      case SYSTEM_EVENT_STA_CONNECTED:
+        ESP_LOGI("SYS", "WiFi connected");
+        wifi_connected = true;
+        break;
+
+      case SYSTEM_EVENT_STA_DISCONNECTED:
+        ESP_LOGI("SYS", "WiFi disconnected");
+        wifi_connected = false;
+        break;
+
+      default:
+        break;
+    }
+    return ESP_OK;
+  }
+
   bool initialisations()
   {
-    // Print chip information
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(ret);
+
+    ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
 
     verbose = VERBOSE;
 
@@ -198,8 +230,8 @@
   void terminate()
   {
     #if STATISTICS
-      INFO_MSG("terminate: GC Processing Count: %d.", gc_call_counter);
-      INFO_MSG("terminate: Max GC Duration: %10.7f Sec.", max_gc_duration);
+      INFO("terminate", "GC Processing Count: %d.", gc_call_counter);
+      INFO("terminate", "Max GC Duration: %10.7f Sec.", max_gc_duration);
       fputc('\n', stderr);
     #endif
 

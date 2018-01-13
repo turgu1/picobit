@@ -1,10 +1,14 @@
 ;; SYS Definitions
 
-(define Reset    99)
-(define Watch-Dog 0)
-(define Sleep     1)
-(define Log       2)
-(define Log-Level 3)
+(define Reset          99)
+(define Watch-Dog       0)
+(define Sleep           1)
+(define Log             2)
+(define Log-Level       3)
+(define Wifi-Init       4)
+(define Wifi-Connect    5)
+(define Wifi-Disconnect 6)
+(define Wifi-Connected? 7)
 
 ; Log Levels
 
@@ -22,6 +26,10 @@
 ; (SYS Sleep <duration as ms>)
 ; (SYS Log <level> <tag string> <message string>)
 ; (SYS Log-Level <level> <tag string>) ; Set level of log for tag string. Use "*" for setting all tags
+; (SYS Wifi-Init <SSID string> <Password string>)
+; (SYS Wifi-Connect)
+; (SYS Wifi-Disconnect)
+; (SYS Wifi-Connected?)
 
 (define SYS (lambda (op . params)
   (#%sys op params)))
