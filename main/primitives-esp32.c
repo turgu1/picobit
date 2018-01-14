@@ -100,12 +100,12 @@
 
 // WakeUp Causes
 
-#define UNDEFINED       0
-#define EXT0            1
-#define EXT1            2
-#define TIMER           3
-#define TOUCHPAD        4
-#define ULP             5
+#define WC_UNDEFINED    0
+#define WC_EXT0         1
+#define WC_EXT1         2
+#define WC_TIMER        3
+#define WC_TOUCHPAD     4
+#define WC_ULP          5
 
 // GPIO Definitions
 
@@ -231,16 +231,16 @@ PRIMITIVE(#%sys, sys, 2, 42)
       #if ESP32
         cause = esp_sleep_get_wakeup_cause();
         switch (cause) {
-          case ESP_SLEEP_WAKEUP_UNDEFINED: a1 = UNDEFINED; break;
-          case ESP_SLEEP_WAKEUP_EXT0:      a1 = EXT0;      break;
-          case ESP_SLEEP_WAKEUP_EXT1:      a1 = EXT1;      break;
-          case ESP_SLEEP_WAKEUP_TIMER:     a1 = TIMER;     break;
-          case ESP_SLEEP_WAKEUP_TOUCHPAD:  a1 = TOUCHPAD;  break;
-          case ESP_SLEEP_WAKEUP_ULP:       a1 = ULP;       break;
-          default:                         a1 = UNDEFINED; break;
+          case ESP_SLEEP_WAKEUP_UNDEFINED: a1 = WC_UNDEFINED; break;
+          case ESP_SLEEP_WAKEUP_EXT0:      a1 = WC_EXT0;      break;
+          case ESP_SLEEP_WAKEUP_EXT1:      a1 = WC_EXT1;      break;
+          case ESP_SLEEP_WAKEUP_TIMER:     a1 = WC_TIMER;     break;
+          case ESP_SLEEP_WAKEUP_TOUCHPAD:  a1 = WC_TOUCHPAD;  break;
+          case ESP_SLEEP_WAKEUP_ULP:       a1 = WC_ULP;       break;
+          default:                         a1 = WC_UNDEFINED; break;
         }
       #else
-        a1 = UNDEFINED;
+        a1 = WC_UNDEFINED;
       #endif
       reg1 = encode_int(a1);
       break;

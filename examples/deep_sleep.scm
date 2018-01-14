@@ -8,8 +8,8 @@
 (define TAG "PGM")
 (define LED Pin_2)
 
-(display   "WakeUp Cause: ")
-(displayln (SYS WakeUp-Cause))
+;(display   "WakeUp Cause: ")
+;(displayln (SYS WakeUp-Cause))
 
 (GPIO Init LED Output)
 

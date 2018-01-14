@@ -47,11 +47,11 @@ directories:
 
 #Clean only Objecst
 clean:
-	@$(RM) -rf $(BUILDDIR)
+	@$(RM) -f $(BUILDDIR)/*
 
 #Full Clean, Objects and Binaries
 cleaner: clean
-	@$(RM) -rf $(TARGETDIR)
+	@$(RM) -f $(TARGETDIR)/*
 
 #Pull in dependency info for *existing* .o files
 -include $(OBJECTS:.$(OBJEXT)=.$(DEPEXT))
