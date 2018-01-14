@@ -395,7 +395,7 @@ cell_p mm_new_ram_cell()
   return p;
 }
 
-bool mm_init(uint8_t * program)
+bool mm_init(pgm_ptr program)
 {
   E32(taskYIELD());
 

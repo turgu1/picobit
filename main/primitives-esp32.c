@@ -18,6 +18,7 @@
 
   #define COLOR(COLOR)  "\033[1;" COLOR "m"
   #define RESET_COLOR   "\033[0m"
+
   #define CBLACK   "30"
   #define CRED     "31"
   #define CGREEN   "32"
@@ -89,6 +90,9 @@
 #define WIFI_CONNECTED  7
 #define WIFI_STOP       8
 #define WIFI_START      9
+#define WAKEUP_CAUSE   10
+
+// Log Levels
 
 #define LOG_ERROR       5
 #define LOG_WARNING     4
@@ -96,6 +100,15 @@
 #define LOG_DEBUG       2
 #define LOG_VERBOSE     1
 #define LOG_NONE        0
+
+// WakeUp Causes
+
+#define UNDEFINED       0
+#define EXT0            1
+#define EXT1            2
+#define TIMER           3
+#define TOUCHPAD        4
+#define ULP             5
 
 // GPIO Definitions
 
@@ -125,6 +138,7 @@ PRIMITIVE(#%sys, sys, 2, 43)
   char str1[50];
   char str2[120];
   E32(esp_err_t result);
+  E32(esp_sleep_wakeup_cause_t cause);
 
   EXPECT(IS_SMALL_INT(reg1), "sys.0", "operation as small int");
   a1 = decode_int(reg1);
@@ -138,12 +152,12 @@ PRIMITIVE(#%sys, sys, 2, 43)
 
     case DEEP_SLEEP:
       if (reg2 != NIL) {
-        GET_NEXT_VALUE((a1 >= 0) && (a1 <= 8000000), "sys.1", "sleep time <= 30000ms");
-        E32(ESP_ERROR_CHECK(esp_sleep_enable_timer_wakeup(1000UL * a1)));
+        GET_NEXT_VALUE((a1 >= 0) && (a1 <= 8000000), "sys.1", "sleep time <= 8000000ms");
+        E32(ESP_ERROR_CHECK(esp_sleep_enable_timer_wakeup(1000ULL * a1)));
         DEBUG("SYS", "WakeUp in %d ms", a1);
       }
-      esp_wifi_disconnect();
-      esp_wifi_stop();
+      E32(esp_wifi_disconnect());
+      E32(esp_wifi_stop());
       DEBUG("SYS", "Deep Sleep Start");
       E32(esp_deep_sleep_start());
       reg1 = TRUE;
@@ -151,8 +165,8 @@ PRIMITIVE(#%sys, sys, 2, 43)
 
     case LIGHT_SLEEP:
       if (reg2 != NIL) {
-        GET_NEXT_VALUE((a1 >= 0) && (a1 <= 8000000), "sys.1", "sleep time <= 30000ms");
-        E32(ESP_ERROR_CHECK(esp_sleep_enable_timer_wakeup(1000UL * a1)));
+        GET_NEXT_VALUE((a1 >= 0) && (a1 <= 8000000), "sys.1", "sleep time <= 8000000ms");
+        E32(ESP_ERROR_CHECK(esp_sleep_enable_timer_wakeup(1000ULL * a1)));
         DEBUG("SYS", "WakeUp in %d ms", a1);
       }
       DEBUG("SYS", "Deep Sleep Start");
@@ -258,6 +272,24 @@ PRIMITIVE(#%sys, sys, 2, 43)
       E32(reg1 = result == ESP_OK ? TRUE : FALSE);
       WKS(reg1 = TRUE);
       DEBUG("SYS", "WiFi Start, result: %s", reg1 == TRUE ? "OK" : "ERROR");
+      break;
+
+    case WAKEUP_CAUSE:
+      #if ESP32
+        cause = esp_sleep_get_wakeup_cause();
+        switch (cause) {
+          case ESP_SLEEP_WAKEUP_UNDEFINED: a1 = UNDEFINED; break;
+          case ESP_SLEEP_WAKEUP_EXT0:      a1 = EXT0;      break;
+          case ESP_SLEEP_WAKEUP_EXT1:      a1 = EXT1;      break;
+          case ESP_SLEEP_WAKEUP_TIMER:     a1 = TIMER;     break;
+          case ESP_SLEEP_WAKEUP_TOUCHPAD:  a1 = TOUCHPAD;  break;
+          case ESP_SLEEP_WAKEUP_ULP:       a1 = ULP;       break;
+          default:                         a1 = UNDEFINED; break;
+        }
+      #else
+        a1 = UNDEFINED;
+      #endif
+      reg1 = encode_int(a1);
       break;
 
     default:

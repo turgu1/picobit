@@ -58,7 +58,7 @@
 
 #endif
 
-PUBLIC bool   mm_init(uint8_t * program);
+PUBLIC bool   mm_init(pgm_ptr program);
 PUBLIC void   mm_mark(cell_p p);
 PUBLIC void   mm_gc();
 PUBLIC cell_p mm_new_ram_cell();

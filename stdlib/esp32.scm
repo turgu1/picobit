@@ -13,6 +13,7 @@
 (define WiFi-Connected? 7)
 (define WiFi-Stop       8)
 (define WiFi-Start      9)
+(define WakeUp-Cause   10)
 
 ; Log Levels
 
@@ -23,10 +24,20 @@
 (define Verbose   1)
 (define None      0)
 
+; WakeUp Causes
+
+(define WakeUp-Cause-Undefined 0)
+(define WakeUp-Cause-Ext0      1)
+(define WakeUp-Cause-Ext1      2)
+(define WakeUp-Cause-Timer     3)
+(define WakeUp-Cause-Touchpad  4)
+(define WakeUp-Cause-ULP       5)
+
 ; System operations:
 ;
 ; (SYS Reset)
 ; (SYS Deep-Sleep [wakeUp time is ms])
+; (SYS Light-Sleep [wakeUp time is ms])
 ; (SYS Watch-Dog)
 ; (SYS Sleep <duration as ms>)
 ; (SYS Log <level> <tag string> <message string>)
@@ -35,6 +46,9 @@
 ; (SYS WiFi-Connect)
 ; (SYS WiFi-Disconnect)
 ; (SYS WiFi-Connected?)
+; (SYS WiFi-Stop)
+; (SYS WiFi-Start)
+; (SYS Wake-Up-Cause) ; Returns the cause of a system wakeUp
 
 (define LOG (lambda (level tag message)
                     (SYS Log level tag message)))

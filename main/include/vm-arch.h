@@ -305,9 +305,11 @@ typedef union {
   uint8_t bits;
 } cell_flags;
 
-typedef cell * cell_ptr;
-typedef cell_data * cell_data_ptr;
-typedef cell_flags * cell_flags_ptr;
+typedef          cell * cell_ptr;
+typedef    const cell * rom_cell_ptr;
+typedef     cell_data * cell_data_ptr;
+typedef    cell_flags * cell_flags_ptr;
+typedef const uint8_t * pgm_ptr;
 
 /** Globals.
 
@@ -552,47 +554,47 @@ typedef cell_flags * cell_flags_ptr;
 
 // Fixnum
 
-#define RAM_GET_FIXNUM_VALUE(p)    ram_heap_data[p].fixnum.value
-#define ROM_GET_FIXNUM_VALUE(p)    rom_heap[ROM_IDX(p)].fixnum.value
+#define RAM_GET_FIXNUM_VALUE(p)     ram_heap_data[p].fixnum.value
+#define ROM_GET_FIXNUM_VALUE(p)     rom_heap[ROM_IDX(p)].fixnum.value
 
-#define RAM_SET_FIXNUM_VALUE(p, v) ram_heap_data[p].fixnum.value = v
+#define RAM_SET_FIXNUM_VALUE(p, v)  ram_heap_data[p].fixnum.value = v
 
 // Bignum
 
-#define RAM_GET_BIGNUM_VALUE(p)    ram_heap_data[p].bignum.num_part
-#define ROM_GET_BIGNUM_VALUE(p)    rom_heap[ROM_IDX(p)].bignum.num_part
+#define RAM_GET_BIGNUM_VALUE(p)     ram_heap_data[p].bignum.num_part
+#define ROM_GET_BIGNUM_VALUE(p)     rom_heap[ROM_IDX(p)].bignum.num_part
 
-#define RAM_GET_BIGNUM_HI(p)       ram_heap_data[p].bignum.next_p
-#define ROM_GET_BIGNUM_HI(p)       rom_heap[ROM_IDX(p)].bignum.next_p
+#define RAM_GET_BIGNUM_HI(p)        ram_heap_data[p].bignum.next_p
+#define ROM_GET_BIGNUM_HI(p)        rom_heap[ROM_IDX(p)].bignum.next_p
 
-#define RAM_SET_BIGNUM_HI(p,h)     ram_heap_data[p].bignum.next_p = h
-#define RAM_SET_BIGNUM_VALUE(p,v)  ram_heap_data[p].bignum.num_part = v
+#define RAM_SET_BIGNUM_HI(p,h)      ram_heap_data[p].bignum.next_p = h
+#define RAM_SET_BIGNUM_VALUE(p,v)   ram_heap_data[p].bignum.num_part = v
 
 // Vector
 
-#define RAM_GET_VECTOR_LENGTH(p)   ram_heap_data[p].vector.length
-#define ROM_GET_VECTOR_LENGTH(p)   rom_heap[ROM_IDX(p)].vector.length
+#define RAM_GET_VECTOR_LENGTH(p)    ram_heap_data[p].vector.length
+#define ROM_GET_VECTOR_LENGTH(p)    rom_heap[ROM_IDX(p)].vector.length
 
 #define RAM_SET_VECTOR_LENGTH(p, v) ram_heap_data[p].vector.length = v
 
-#define RAM_SET_VECTOR_START(p, v) ram_heap_data[p].vector.start_p = v
-#define RAM_GET_VECTOR_START(p)    ram_heap_data[p].vector.start_p
-#define ROM_GET_VECTOR_START(p)    rom_heap[ROM_IDX(p)].vector.start_p
+#define RAM_SET_VECTOR_START(p, v)  ram_heap_data[p].vector.start_p = v
+#define RAM_GET_VECTOR_START(p)     ram_heap_data[p].vector.start_p
+#define ROM_GET_VECTOR_START(p)     rom_heap[ROM_IDX(p)].vector.start_p
 
-#define VECTOR_GET_LENGTH(p)       vector_heap[p].vector.length
-#define VECTOR_GET_RAM_PTR(p)      vector_heap[p].vector.start_p
+#define VECTOR_GET_LENGTH(p)        vector_heap[p].vector.length
+#define VECTOR_GET_RAM_PTR(p)       vector_heap[p].vector.start_p
 
-#define VECTOR_SET_LENGTH(p, l)    vector_heap[p].vector.length = l
-#define VECTOR_SET_RAM_PTR(p, r)   vector_heap[p].vector.start_p = r
+#define VECTOR_SET_LENGTH(p, l)     vector_heap[p].vector.length = l
+#define VECTOR_SET_RAM_PTR(p, r)    vector_heap[p].vector.start_p = r
 
-#define VECTOR_IS_USED(p)          (vector_heap[p].gc_mark == 1)
-#define VECTOR_IS_FREE(p)          (vector_heap[p].gc_mark == 0)
+#define VECTOR_IS_USED(p)           (vector_heap[p].gc_mark == 1)
+#define VECTOR_IS_FREE(p)           (vector_heap[p].gc_mark == 0)
 
-#define VECTOR_SET_USED(p)         vector_heap[p].gc_mark = 1
-#define VECTOR_SET_FREE(p)         vector_heap[p].gc_mark = 0
+#define VECTOR_SET_USED(p)          vector_heap[p].gc_mark = 1
+#define VECTOR_SET_FREE(p)          vector_heap[p].gc_mark = 0
 
-#define VECTOR_GET_BYTE(p, i)      *(((uint8_t *) &vector_heap[p]) + i)
-#define VECTOR_SET_BYTE(p, i, b)   *(((uint8_t *) &vector_heap[p]) + i) = b
+#define VECTOR_GET_BYTE(p, i)       *(((uint8_t *) &vector_heap[p]) + i)
+#define VECTOR_SET_BYTE(p, i, b)    *(((uint8_t *) &vector_heap[p]) + i) = b
 
 // String
 
@@ -662,13 +664,13 @@ typedef cell_flags * cell_flags_ptr;
 
 PUBLIC cell_p env, cont, reg1, reg2, reg3, reg4;
 PUBLIC code_p entry;
-PUBLIC uint8_t * program;
+PUBLIC pgm_ptr program;
 PUBLIC uint16_t max_addr;
 PUBLIC int32_t a1, a2, a3;
 
 PUBLIC union {
-  uint8_t  * c;
-  uint16_t * s;
+  pgm_ptr c;
+  pgm_ptr s;
 } pc, last_pc;
 
 PUBLIC void vm_arch_init();
@@ -698,7 +700,7 @@ PUBLIC cell_flags_ptr ram_heap_flags;  // read/write
 PUBLIC cell_p         ram_heap_end;
 PUBLIC IDX            ram_heap_size;   // as a number of cells
 
-PUBLIC cell_ptr rom_heap;              // read only
+PUBLIC rom_cell_ptr rom_heap;              // read only
 
 PUBLIC cell_ptr vector_heap;
 PUBLIC IDX      vector_heap_size;
