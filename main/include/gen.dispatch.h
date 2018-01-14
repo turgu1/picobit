@@ -312,6 +312,14 @@
             break;
 
           case 10 :
+            TRACE("  (%s <%d>)\n", "#%sys", 2);
+            reg2 = pop();
+            reg1 = pop();
+            primitive_sys();
+            env = new_pair(reg1, env);
+            break;
+
+          case 11 :
             TRACE("  (%s <%d>)\n", "#%gpio", 2);
             reg2 = pop();
             reg1 = pop();
@@ -319,11 +327,11 @@
             env = new_pair(reg1, env);
             break;
 
-          case 11 :
-            TRACE("  (%s <%d>)\n", "#%sys", 2);
+          case 12 :
+            TRACE("  (%s <%d>)\n", "#%net", 2);
             reg2 = pop();
             reg1 = pop();
-            primitive_sys();
+            primitive_net();
             env = new_pair(reg1, env);
             break;
         }

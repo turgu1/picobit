@@ -27,12 +27,15 @@
 
   bool initialisations(char * program_filename)
   {
-    if ((program = calloc(65536, 1)) == NULL) {
+    uint8_t * buffer;
+    if ((buffer = calloc(65536, 1)) == NULL) {
       FATAL("initialisations", "Unable to allocate program space");
     }
 
-    if (!read_hex_file(program_filename, program, 65536)) return false;
+    if (!read_hex_file(program_filename, buffer, 65536)) return false;
 
+    program = buffer;
+    
     if (!mm_init(program)) return false;
 
     vm_arch_init();

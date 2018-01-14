@@ -14,6 +14,8 @@ extern void terminate();
   #error "Not a supported platform"
 #endif
 
+#define MQTT 0
+
 #ifdef WORKSTATION
   #include <stdint.h>
   #include <stdlib.h>

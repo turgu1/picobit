@@ -13,6 +13,9 @@
   #include "driver/gpio.h"
   #include "esp_wifi.h"
   #include "esp_log.h"
+  #if MQTT
+    #include "esp_mqtt.h"
+  #endif
 
   cell_p check(esp_err_t result) { return result == ESP_OK ? TRUE : FALSE; }
 
@@ -84,13 +87,7 @@
 #define SLEEP           1
 #define LOG             2
 #define LOG_LEVEL       3
-#define WIFI_INIT       4
-#define WIFI_CONNECT    5
-#define WIFI_DISCONNECT 6
-#define WIFI_CONNECTED  7
-#define WIFI_STOP       8
-#define WIFI_START      9
-#define WAKEUP_CAUSE   10
+#define WAKEUP_CAUSE    4
 
 // Log Levels
 
@@ -129,11 +126,26 @@
 #define DISABLE         0
 #define ENABLE          1
 
+// NET Definitions
+
+#define WIFI_INIT       0
+#define WIFI_CONNECT    1
+#define WIFI_DISCONNECT 2
+#define WIFI_CONNECTED  3
+#define WIFI_STOP       4
+#define WIFI_START      5
+#define MQTT_INIT       6
+#define MQTT_START      7
+#define MQTT_STOP       8
+#define MQTT_SUB        9
+#define MQTT_UNSUB     10
+#define MQTT_PUBLISH   11
+
 extern void show(cell_p p);
 E32(extern bool wifi_connected);
 
 // (SYS operation (params ...))
-PRIMITIVE(#%sys, sys, 2, 43)
+PRIMITIVE(#%sys, sys, 2, 42)
 {
   char str1[50];
   char str2[120];
@@ -215,65 +227,6 @@ PRIMITIVE(#%sys, sys, 2, 43)
       reg1 = TRUE;
       break;
 
-    case WIFI_INIT:
-      GET_NEXT_STRING(str1, 32, "sys.", "SSID"    );
-      GET_NEXT_STRING(str2, 64, "sys.", "password");
-      #if ESP32
-        tcpip_adapter_init();
-        wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-        ESP_ERROR_CHECK(esp_wifi_init(&cfg));
-        ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
-        ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
-        wifi_config_t sta_config;
-
-        strcpy((char *) sta_config.sta.ssid,     str1);
-        strcpy((char *) sta_config.sta.password, str2);
-        sta_config.sta.bssid_set = false;
-
-        ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &sta_config));
-        ESP_ERROR_CHECK(esp_wifi_start());
-        ESP_ERROR_CHECK(result = esp_wifi_connect());
-        reg1 = result == ESP_OK ? TRUE : FALSE;
-      #else
-        reg1 = TRUE;
-      #endif
-      DEBUG("SYS", "WiFi Init with SSID: %s, result: %s", str1, reg1 == TRUE ? "OK" : "ERROR");
-      break;
-
-    case WIFI_CONNECT:
-      E32(ESP_ERROR_CHECK(result = esp_wifi_connect()));
-      E32(reg1 = result == ESP_OK ? TRUE : FALSE);
-      WKS(reg1 = TRUE);
-      DEBUG("SYS", "WiFi Connect, result: %s", reg1 == TRUE ? "OK" : "ERROR");
-      break;
-
-    case WIFI_DISCONNECT:
-      E32(ESP_ERROR_CHECK(result = esp_wifi_disconnect()));
-      E32(reg1 = result == ESP_OK ? TRUE : FALSE);
-      WKS(reg1 = TRUE);
-      DEBUG("SYS", "WiFi Disconnect, result: %s", reg1 == TRUE ? "OK" : "ERROR");
-      break;
-
-    case WIFI_CONNECTED:
-      E32(reg1 = (wifi_connected ? TRUE : FALSE));
-      WKS(reg1 = TRUE);
-      DEBUG("SYS", "WiFi is %sconnected", reg1 == TRUE ? "" : "not ");
-      break;
-
-    case WIFI_STOP:
-      E32(ESP_ERROR_CHECK(result = esp_wifi_stop()));
-      E32(reg1 = result == ESP_OK ? TRUE : FALSE);
-      WKS(reg1 = TRUE);
-      DEBUG("SYS", "WiFi Stop, result: %s", reg1 == TRUE ? "OK" : "ERROR");
-      break;
-
-    case WIFI_START:
-      E32(ESP_ERROR_CHECK(result = esp_wifi_start()));
-      E32(reg1 = result == ESP_OK ? TRUE : FALSE);
-      WKS(reg1 = TRUE);
-      DEBUG("SYS", "WiFi Start, result: %s", reg1 == TRUE ? "OK" : "ERROR");
-      break;
-
     case WAKEUP_CAUSE:
       #if ESP32
         cause = esp_sleep_get_wakeup_cause();
@@ -300,7 +253,7 @@ PRIMITIVE(#%sys, sys, 2, 43)
 }
 
 // (GPIO operation (params ...))
-PRIMITIVE(#%gpio, gpio, 2, 42)
+PRIMITIVE(#%gpio, gpio, 2, 43)
 {
   E32(gpio_config_t io_conf);
 
@@ -385,6 +338,127 @@ PRIMITIVE(#%gpio, gpio, 2, 42)
 
     default:
       ERROR("gpio", "Unknown operation: %d", a1);
+      reg1 = FALSE;
+      break;
+  }
+
+  reg2 = reg3 = NIL;
+}
+
+// (NET operation (params ...))
+PRIMITIVE(#%net, net, 2, 44)
+{
+  char str1[50];
+  char str2[120];
+  #if MQTT
+    char str3[50];
+    char str4[50];
+  #endif
+  E32(esp_err_t result);
+
+  EXPECT(IS_SMALL_INT(reg1), "net.0", "operation as small int");
+  a1 = decode_int(reg1);
+
+  switch (a1) {
+    case WIFI_INIT:
+      GET_NEXT_STRING(str1, 32, "sys.", "SSID"    );
+      GET_NEXT_STRING(str2, 64, "sys.", "password");
+      #if ESP32
+        tcpip_adapter_init();
+        wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+        ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+        ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
+        ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+        wifi_config_t sta_config;
+
+        strcpy((char *) sta_config.sta.ssid,     str1);
+        strcpy((char *) sta_config.sta.password, str2);
+        sta_config.sta.bssid_set = false;
+
+        ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &sta_config));
+        ESP_ERROR_CHECK(esp_wifi_start());
+        ESP_ERROR_CHECK(result = esp_wifi_connect());
+        reg1 = result == ESP_OK ? TRUE : FALSE;
+      #else
+        reg1 = TRUE;
+      #endif
+      DEBUG("SYS", "WiFi Init with SSID: %s, result: %s", str1, reg1 == TRUE ? "OK" : "ERROR");
+      break;
+
+    case WIFI_CONNECT:
+      E32(ESP_ERROR_CHECK(result = esp_wifi_connect()));
+      E32(reg1 = result == ESP_OK ? TRUE : FALSE);
+      WKS(reg1 = TRUE);
+      DEBUG("SYS", "WiFi Connect, result: %s", reg1 == TRUE ? "OK" : "ERROR");
+      break;
+
+    case WIFI_DISCONNECT:
+      E32(ESP_ERROR_CHECK(result = esp_wifi_disconnect()));
+      E32(reg1 = result == ESP_OK ? TRUE : FALSE);
+      WKS(reg1 = TRUE);
+      DEBUG("SYS", "WiFi Disconnect, result: %s", reg1 == TRUE ? "OK" : "ERROR");
+      break;
+
+    case WIFI_CONNECTED:
+      E32(reg1 = (wifi_connected ? TRUE : FALSE));
+      WKS(reg1 = TRUE);
+      DEBUG("SYS", "WiFi is %sconnected", reg1 == TRUE ? "" : "not ");
+      break;
+
+    case WIFI_STOP:
+      E32(ESP_ERROR_CHECK(result = esp_wifi_stop()));
+      E32(reg1 = result == ESP_OK ? TRUE : FALSE);
+      WKS(reg1 = TRUE);
+      DEBUG("SYS", "WiFi Stop, result: %s", reg1 == TRUE ? "OK" : "ERROR");
+      break;
+
+    case WIFI_START:
+      E32(ESP_ERROR_CHECK(result = esp_wifi_start()));
+      E32(reg1 = result == ESP_OK ? TRUE : FALSE);
+      WKS(reg1 = TRUE);
+      DEBUG("SYS", "WiFi Start, result: %s", reg1 == TRUE ? "OK" : "ERROR");
+      break;
+
+#if MQTT
+    case MQTT_INIT:
+      break;
+
+    case MQTT_START:
+      GET_NEXT_STRING(str2, 120, "NET", "host");
+      GET_NEXT_VALUE((a1 >= 0) && (a1 <= 65535), "NET", "port #");
+      GET_NEXT_STRING(str1, 50, "NET", "client id");
+      GET_NEXT_STRING(str3, 50, "NET", "username");
+      GET_NEXT_STRING(str4  50, "NET", "password");
+      E32(esp_mqtt_start(str2, a1, str1, str3, str4));
+      reg1 = TRUE;
+      break;
+
+    case MQTT_STOP:
+      E32(esp_mqtt_stop());
+      reg1 = TRUE;
+      break;
+
+    case MQTT_SUB:
+      GET_NEXT_STRING(str2, 120, "NET", "topic");
+      GET_NEXT_VALUE((a1 >= 0) && (a1 < 3), "NET", "qos");
+      E32(result = esp_mqtt_subscribe(str2, a1));
+      E32(reg1 = result ? TRUE : FALSE);
+      WKS(reg1 = TRUE);
+      break;
+
+    case MQTT_UNSUB:
+      GET_NEXT_STRING(str2, 120, "NET", "topic");
+      E32(result = esp_mqtt_unsubscribe(str2));
+      E32(reg1 = result ? TRUE : FALSE);
+      WKS(reg1 = TRUE);
+      break;
+
+    case MQTT_PUBLISH:
+      break;
+#endif
+
+    default:
+      ERROR("net", "Unknown operation: %d", a1);
       reg1 = FALSE;
       break;
   }

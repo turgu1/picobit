@@ -7,13 +7,7 @@
 (define Sleep           1)
 (define Log             2)
 (define Log-Level       3)
-(define WiFi-Init       4)
-(define WiFi-Connect    5)
-(define WiFi-Disconnect 6)
-(define WiFi-Connected? 7)
-(define WiFi-Stop       8)
-(define WiFi-Start      9)
-(define WakeUp-Cause   10)
+(define WakeUp-Cause    4)
 
 ; Log Levels
 
@@ -42,12 +36,6 @@
 ; (SYS Sleep <duration as ms>)
 ; (SYS Log <level> <tag string> <message string>)
 ; (SYS Log-Level <level> <tag string>) ; Set level of log for tag string. Use "*" for setting all tags
-; (SYS WiFi-Init <SSID string> <Password string>)
-; (SYS WiFi-Connect)
-; (SYS WiFi-Disconnect)
-; (SYS WiFi-Connected?)
-; (SYS WiFi-Stop)
-; (SYS WiFi-Start)
 ; (SYS Wake-Up-Cause) ; Returns the cause of a system wakeUp
 
 (define LOG (lambda (level tag message)
@@ -127,3 +115,24 @@
 
 (define GPIO (lambda (op . params)
   (#%gpio op params)))
+
+;; NET Definitions
+
+(define WiFi-Init       0)
+(define WiFi-Connect    1)
+(define WiFi-Disconnect 2)
+(define WiFi-Connected? 3)
+(define WiFi-Stop       4)
+(define WiFi-Start      5)
+
+;; NET Operations
+
+; (NET WiFi-Init <SSID string> <Password string>)
+; (NET WiFi-Connect)
+; (NET WiFi-Disconnect)
+; (NET WiFi-Connected?)
+; (NET WiFi-Stop)
+; (NET WiFi-Start)
+
+(define NET (lambda (op . params)
+  (#%net op params)))

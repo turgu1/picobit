@@ -19,18 +19,18 @@
   )
 
 (let connect-loop ()
-  (SYS WiFi-Init "wifi ssid" "wifi password")
+  (NET WiFi-Init "wifi ssid" "wifi password")
   (let loop ((count 20))
     (sleep 400)
-    (if (not (SYS WiFi-Connected?))
+    (if (not (NET WiFi-Connected?))
       (if (not (eq? count 0)) (loop (- count 1)))))
-  (if (not (SYS WiFi-Connected?))
+  (if (not (NET WiFi-Connected?))
     (begin
      (SYS Log Info TAG "WiFi not connected. Trying again.")
-     (SYS WiFi-Stop)
+     (NET WiFi-Stop)
      (connect-loop))))
 
-(if (SYS WiFi-Connected?)
+(if (NET WiFi-Connected?)
   (SYS Log Info TAG "Yeah!!!")
   (SYS Log Info TAG "Yeark...."))
 
