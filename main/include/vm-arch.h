@@ -1,3 +1,15 @@
+/* ESP32 Scheme (picobit) VM
+
+   This program is in the Public Domain
+
+   Unless required by applicable law or agreed to in writing, this
+   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+   CONDITIONS OF ANY KIND, either express or implied.
+
+   Guy Turcotte
+   December 2017
+*/
+
 #ifndef VM_ARCH_H
 #define VM_ARCH_H
 
