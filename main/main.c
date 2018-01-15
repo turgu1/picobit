@@ -1,4 +1,4 @@
-/* ESP32 Scheme VM
+/* ESP32 Scheme (picobit) VM
 
    This program is in the Public Domain
 

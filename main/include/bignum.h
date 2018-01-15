@@ -1,3 +1,15 @@
+/* ESP32 Scheme (picobit) VM
+
+   This program is in the Public Domain
+
+   Unless required by applicable law or agreed to in writing, this
+   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+   CONDITIONS OF ANY KIND, either express or implied.
+
+   Guy Turcotte
+   December 2017
+*/
+
 #ifndef BIGNUM_H
 #define BIGNUM_H
 
@@ -15,7 +27,7 @@ typedef cell_p integer;
  * representation for the cases where a result of
  * an operation is wider than a `digit'.
  */
- 
+
 typedef uint16_t digit;
 typedef uint32_t two_digit;
 
