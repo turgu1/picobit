@@ -51,9 +51,10 @@
   {
     #if STATISTICS
       INFO("terminate", "GC Processing Count: %d.", gc_call_counter);
-      #if WORKSTATION
-        INFO("terminate", "Max GC Duration: %10.7f Sec.\n", max_gc_duration);
-      #endif
+    #endif
+
+    #if STATISTICS_GC
+      INFO("terminate", "Max GC Duration: %10.7f Sec.\n", max_gc_duration);
     #endif
 
     if (!keep_running) fprintf(stderr, "\nInterrupted.\n");

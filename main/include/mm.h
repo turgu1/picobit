@@ -87,7 +87,7 @@ PUBLIC void   unmark_ram();
   PUBLIC double max_gc_duration;
 #endif
 
-#if STATISTICS_GC
+#if STATISTICS
   PUBLIC int gc_call_counter;
 #endif
 

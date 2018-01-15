@@ -438,7 +438,7 @@ bool mm_init(pgm_ptr program)
 
   #ifdef WORKSTATION
 
-    #if STATISTICS
+    #if STATISTICS_GC
       max_gc_duration = 0;
     #endif
 
