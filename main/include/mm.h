@@ -71,11 +71,11 @@ PUBLIC void   unmark_ram();
   PUBLIC bool is_free(cell_p p);
 #endif
 
-#if STATISTICS
+#if STATISTICS_GC
   PUBLIC double max_gc_duration;
 #endif
 
-#if STATISTICS
+#if STATISTICS_GC
   PUBLIC int gc_call_counter;
 #endif
 

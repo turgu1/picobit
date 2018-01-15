@@ -245,6 +245,9 @@ void mm_gc()
 
   #if STATISTICS
     used_cells_count = 0;
+  #endif
+
+  #if STATISTICS_GC
     gc_call_counter++;
 
     double gc_duration;
@@ -266,7 +269,7 @@ void mm_gc()
 
   mm_sweep();
 
-  #if STATISTICS
+  #if STATISTICS_GC
     end_time = clock();
     gc_duration = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
     if (gc_duration > max_gc_duration) {

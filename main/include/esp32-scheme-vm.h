@@ -58,9 +58,21 @@ extern void terminate();
 
 #define STATISTICS (STATS || DEBUGGING)
 
+// STATISTICS_GC will allow the computation of the maximum time used
+// to process garbage collection. Note that it is the only part of
+// the code that uses floating point calculation.
+
+#define STATISTICS_GC 0
+
 #if TRACING
   #if WORKSTATION
-    #define TRACE(a, ...)   { if (trace) { fprintf(stderr, "\n[%p]", (void *) (last_pc.c - program)); fprintf(stderr, a, __VA_ARGS__); fflush(stderr); } }
+    #define TRACE(a, ...)   { \
+      if (trace) { \
+        fprintf(stderr, "\n[%p]", (void *) (last_pc.c - program)); \
+        fprintf(stderr, a, __VA_ARGS__); \
+        fflush(stderr); \
+      } \
+    }
   #else
     #define TRACE(a, ...)
   #endif
