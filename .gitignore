@@ -1,6 +1,9 @@
 .primitives.p
 .builtins.p
 compiled/
+obj/
+bin/
+build-esp32/
 
 .DS_Store
 .DS_Store?
