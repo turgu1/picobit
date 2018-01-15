@@ -60,7 +60,7 @@ extern void terminate();
 
 #if TRACING
   #if WORKSTATION
-    #define TRACE(a, ...)   { if (trace) { fprintf(stderr, "\n[%p]", (void *) (last_pc.c - program)); fprintf(stderr, a, __VA_ARGS__); } }
+    #define TRACE(a, ...)   { if (trace) { fprintf(stderr, "\n[%p]", (void *) (last_pc.c - program)); fprintf(stderr, a, __VA_ARGS__); fflush(stderr); } }
   #else
     #define TRACE(a, ...)
   #endif
@@ -73,9 +73,9 @@ extern void terminate();
     #define   FATAL(a, ...)   {     fputs("\nFATAL - In " a ": ", stderr); fprintf(stderr, __VA_ARGS__); terminate(); }
     #define   ERROR(a, ...)   {     fputs("\nERROR - In " a ": ", stderr); fprintf(stderr, __VA_ARGS__); }
     #define WARNING(a, ...)   {   fputs("\nWARNING - In " a ": ", stderr); fprintf(stderr, __VA_ARGS__); }
-    #define    INFO(a, ...)   {      fputs("\nINFO - In " a ": ", stderr); fprintf(stderr, __VA_ARGS__); }
-    #define   DEBUG(a, ...)   {     fputs("\nDEBUG - In " a ": ", stderr); fprintf(stderr, __VA_ARGS__); }
-    #define VERBOSE(a, ...)   {   fputs("\nVERBOSE - In " a ": ", stderr); fprintf(stderr, __VA_ARGS__); }
+    #define    INFO(a, ...)   if (verbose) {    fputs("\nINFO - In " a ": ", stderr); fprintf(stderr, __VA_ARGS__); }
+    #define   DEBUG(a, ...)   if (verbose) {   fputs("\nDEBUG - In " a ": ", stderr); fprintf(stderr, __VA_ARGS__); }
+    #define VERBOSE(a, ...)   if (verbose) { fputs("\nVERBOSE - In " a ": ", stderr); fprintf(stderr, __VA_ARGS__); }
   #else
     #define   FATAL(a, ...) { ESP_LOGE(a, __VA_ARGS__); terminate(); }
     #define   ERROR(a, ...)   ESP_LOGE(a, __VA_ARGS__)
@@ -100,7 +100,7 @@ extern void terminate();
     #define   ERROR(a, ...)   ESP_LOGE(a, __VA_ARGS__)
     #define WARNING(a, ...)   ESP_LOGW(a, __VA_ARGS__)
     #define    INFO(a, ...)   // ESP_LOGI(a, __VA_ARGS__)
-    #define   DEBUG(a, ...)   // ESP_LOGD(a, __VA_ARGS__)
+    #define   DEBUG(a, ...)   ESP_LOGD(a, __VA_ARGS__)
     #define VERBOSE(a, ...)   // ESP_LOGV(a, __VA_ARGS__)
   #endif
   #define      TRACE(a, ...)

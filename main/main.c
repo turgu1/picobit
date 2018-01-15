@@ -35,7 +35,7 @@
     if (!read_hex_file(program_filename, buffer, 65536)) return false;
 
     program = buffer;
-    
+
     if (!mm_init(program)) return false;
 
     vm_arch_init();
@@ -52,13 +52,11 @@
     #if STATISTICS
       INFO("terminate", "GC Processing Count: %d.", gc_call_counter);
       #if WORKSTATION
-        INFO("terminate", "Max GC Duration: %10.7f Sec.", max_gc_duration);
+        INFO("terminate", "Max GC Duration: %10.7f Sec.\n", max_gc_duration);
       #endif
     #endif
 
-    if (!keep_running) fprintf(stderr, "\nInterrupted.");
-
-    fputc('\n', stderr);
+    if (!keep_running) fprintf(stderr, "\nInterrupted.\n");
 
     fflush(stderr);
     fflush(stdout);

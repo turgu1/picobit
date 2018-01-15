@@ -5,9 +5,9 @@ function primitivegen(primitiveclass, offset) {
 
   print "      case " primitiveclass " :"
   #print "        #ifdef CONFIG_DEBUG_STRINGS"
-  #print "          TRACE(\"  (%s)\\n\", primitive_names[(instr & 0x0F) + " offset "]);"
+  #print "          TRACE(\"  (%s)\", primitive_names[(instr & 0x0F) + " offset "]);"
   #print "        #else"
-  #print "          TRACE(\"  (<primitive>)\\n\");"
+  #print "          TRACE(\"  (<primitive>)\");"
   #print "        #endif"
   #print ""
   print "        switch (instr & 0x0F) {"
@@ -16,7 +16,7 @@ function primitivegen(primitiveclass, offset) {
     if(!pr[i, "scheme_name"]) continue;
 
     print "          case " (i - offset) " :"
-    print "            TRACE(\"  (%s <%d>)\\n\", \"" pr[i, "scheme_name"] "\", " pr[i, "arguments"] ");"
+    print "            TRACE(\"  (%s <%d>)\", \"" pr[i, "scheme_name"] "\", " pr[i, "arguments"] ");"
     if (i == 0) {
       print "            return;"
       print "";

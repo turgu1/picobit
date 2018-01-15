@@ -310,6 +310,7 @@ typedef    const cell * rom_cell_ptr;
 typedef     cell_data * cell_data_ptr;
 typedef    cell_flags * cell_flags_ptr;
 typedef const uint8_t * pgm_ptr;
+typedef const uint16_t * pgm_sptr;
 
 /** Globals.
 
@@ -670,7 +671,7 @@ PUBLIC int32_t a1, a2, a3;
 
 PUBLIC union {
   pgm_ptr c;
-  pgm_ptr s;
+  pgm_sptr s;
 } pc, last_pc;
 
 PUBLIC void vm_arch_init();

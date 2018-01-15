@@ -160,7 +160,7 @@ void interpreter()
   while (keep_running) {
     #if DEBUGGING
       if (pc.c >= (program + max_addr)) {
-        FATAL("interpreter", "Reached an non-program location: %d\n", (int) (pc.c - program));
+        FATAL("interpreter", "Reached an non-program location: %d", (int) (pc.c - program));
       }
     #endif
     #if TRACING
@@ -172,7 +172,7 @@ void interpreter()
       case INSTR_LDCS1 :
       case INSTR_LDCS2 :
         r1 = instr & 0x1F;
-        TRACE("  LDCS %d\n", r1);
+        TRACE("  LDCS %d", r1);
         if (r1 < 3) {
           env = new_pair(r1 + 0xFFFD, env);
         }
@@ -184,7 +184,7 @@ void interpreter()
       case INSTR_LDSTK1 :
       case INSTR_LDSTK2 :
         r1 = instr & 0x1F;
-        TRACE("  LDSTK %d\n", r1);
+        TRACE("  LDSTK %d", r1);
 
         reg1 = env;
         while (r1-- && (reg1 != NIL)) {
@@ -196,7 +196,7 @@ void interpreter()
 
       case INSTR_LDS :
         r1 = instr & 0x0F;
-        TRACE("  LDS %d\n", r1);
+        TRACE("  LDS %d", r1);
         reg1 = GLOBAL_GET(r1);
         env = new_pair(reg1, env);
         reg1 = NIL;
@@ -204,13 +204,13 @@ void interpreter()
 
       case INSTR_STS :
         r1 = instr & 0x0F;
-        TRACE("  STS %d\n", r1);
+        TRACE("  STS %d", r1);
         GLOBAL_SET(r1, pop());
         break;
 
       case INSTR_CALLC :  // Call with closure on TOS
         r1 = instr & 0x0F;
-        TRACE("  CALLC %d\n", r1);
+        TRACE("  CALLC %d", r1);
         build_environment(prepare_arguments(r1));
         save_cont();
 
@@ -221,7 +221,7 @@ void interpreter()
 
       case INSTR_JUMPC :
         r1 = instr & 0x0F;
-        TRACE("  JUMPC %d\n", r1);
+        TRACE("  JUMPC %d", r1);
         build_environment(prepare_arguments(r1));
 
         env = reg1;
@@ -231,7 +231,7 @@ void interpreter()
 
       case INSTR_JUMPS :
         entry = (pc.c - program) + (instr & 0x0F);
-        TRACE("  JUMPS %d\n", entry);
+        TRACE("  JUMPS %d", entry);
 
         reg1 = NIL;
         build_environment(*(program + entry++));
@@ -243,7 +243,7 @@ void interpreter()
         break;
 
       case INSTR_BRSF :
-        TRACE("  BRSF %d\n", instr & 0x0F);
+        TRACE("  BRSF %d", instr & 0x0F);
         if (pop() == FALSE) {
           pc.c += (instr & 0x0F);
         }
@@ -251,7 +251,7 @@ void interpreter()
 
       case INSTR_LDC :
         r1 = ((instr & 0x0F) << 8) + NEXT_BYTE;
-        TRACE("  LDC %d\n", r1);
+        TRACE("  LDC %d", r1);
         if (r1 < 3) {
           env = new_pair(r1 += 0xFFFD, env);
         }
@@ -267,7 +267,7 @@ void interpreter()
         switch (instr) {
           case INSTR_CALL :
             entry = NEXT_SHORT;
-            TRACE("  CALL %d\n", entry);
+            TRACE("  CALL %d", entry);
 
             reg1 = NIL;
             build_environment(*(program + entry++));
@@ -281,7 +281,7 @@ void interpreter()
 
           case INSTR_JUMP : // Jump to top-level procedure
             entry = NEXT_SHORT;
-            TRACE("  JUMP %d\n", entry);
+            TRACE("  JUMP %d", entry);
 
             reg1 = NIL;
             build_environment(*(program + entry++));
@@ -294,13 +294,13 @@ void interpreter()
 
           case INSTR_BR :
             entry = NEXT_SHORT;
-            TRACE("  BR %d\n", entry);
+            TRACE("  BR %d", entry);
             pc.c = program + entry;
             break;
 
           case INSTR_BRF :
             entry = NEXT_SHORT;
-            TRACE("  BRF %d\n", entry);
+            TRACE("  BRF %d", entry);
             if (pop() == FALSE) {
               pc.c = program + entry;
             }
@@ -308,7 +308,7 @@ void interpreter()
 
           case INSTR_CLOS :
             entry = NEXT_SHORT;
-            TRACE("  CLOS %d\n", entry);
+            TRACE("  CLOS %d", entry);
 
             reg2 = tos();
             reg3 = RAM_GET_CAR(reg2); // env
@@ -325,7 +325,7 @@ void interpreter()
             entry = NEXT_BYTE;
             entry = (pc.c - program) + entry - 128;
 
-            TRACE("  CALLR %d\n", entry);
+            TRACE("  CALLR %d", entry);
 
             reg1 = NIL;
 
@@ -341,7 +341,7 @@ void interpreter()
             entry = NEXT_BYTE;
             entry = (pc.c - program) + entry - 128;
 
-            TRACE("  JUMPR %d\n", entry);
+            TRACE("  JUMPR %d", entry);
 
             reg1 = NIL;
 
@@ -355,14 +355,14 @@ void interpreter()
           case INSTR_BRR :
             entry = NEXT_BYTE;
             entry =  (pc.c - program) + entry - 128;
-            TRACE("  BRR %d\n", entry);
+            TRACE("  BRR %d", entry);
             pc.c = program + entry;
             break;
 
           case INSTR_BRRF :
             entry = NEXT_BYTE;
             entry =  (pc.c - program) + entry - 128;
-            TRACE("  BRRF %d\n", entry);
+            TRACE("  BRRF %d", entry);
             if (pop() == FALSE) {
               pc.c = program + entry;
             }
@@ -371,7 +371,7 @@ void interpreter()
           case INSTR_CLOSR :
             entry = NEXT_BYTE ;
             entry =  (pc.c - program) + entry - 128;
-            TRACE("  CLOSR %d\n", entry);
+            TRACE("  CLOSR %d", entry);
 
             reg2 = tos();
             reg3 = RAM_GET_CAR(reg2); // env
@@ -386,7 +386,7 @@ void interpreter()
 
           case INSTR_LD  :
             r1 = NEXT_BYTE;
-            TRACE("  LD %d\n", r1);
+            TRACE("  LD %d", r1);
             reg1 = GLOBAL_GET(r1);
             env = new_pair(reg1, env);
             reg1 = NIL;
@@ -394,7 +394,7 @@ void interpreter()
 
           case INSTR_ST :
             r1 = NEXT_BYTE;
-            TRACE("  ST %d\n", r1);
+            TRACE("  ST %d", r1);
             GLOBAL_SET(r1, pop());
             break;
         }

@@ -80,14 +80,14 @@
 
 // SYS Definitions
 
-#define RESET          99
-#define DEEP_SLEEP     98
-#define LIGHT_SLEEP    97
-#define WATCHDOG        0
-#define SLEEP           1
-#define LOG             2
-#define LOG_LEVEL       3
-#define WAKEUP_CAUSE    4
+#define SYS_RESET           0
+#define SYS_DEEP_SLEEP      1
+#define SYS_LIGHT_SLEEP     2
+#define SYS_WATCHDOG        3
+#define SYS_SLEEP           4
+#define SYS_LOG             5
+#define SYS_LOG_LEVEL       6
+#define SYS_WAKEUP_CAUSE    7
 
 // Log Levels
 
@@ -109,10 +109,10 @@
 
 // GPIO Definitions
 
-#define INIT            0
-#define READ            1
-#define WRITE           2
-#define WAKEUP          3
+#define GPIO_INIT       0
+#define GPIO_READ       1
+#define GPIO_WRITE      2
+#define GPIO_WAKEUP     3
 
 #define PULL_UP         0
 #define PULL_DOWN       1
@@ -128,18 +128,18 @@
 
 // NET Definitions
 
-#define WIFI_INIT       0
-#define WIFI_CONNECT    1
-#define WIFI_DISCONNECT 2
-#define WIFI_CONNECTED  3
-#define WIFI_STOP       4
-#define WIFI_START      5
-#define MQTT_INIT       6
-#define MQTT_START      7
-#define MQTT_STOP       8
-#define MQTT_SUB        9
-#define MQTT_UNSUB     10
-#define MQTT_PUBLISH   11
+#define NET_WIFI_INIT       0
+#define NET_WIFI_CONNECT    1
+#define NET_WIFI_DISCONNECT 2
+#define NET_WIFI_CONNECTED  3
+#define NET_WIFI_STOP       4
+#define NET_WIFI_START      5
+#define NET_MQTT_INIT       6
+#define NET_MQTT_START      7
+#define NET_MQTT_STOP       8
+#define NET_MQTT_SUB        9
+#define NET_MQTT_UNSUB     10
+#define NET_MQTT_PUBLISH   11
 
 extern void show(cell_p p);
 E32(extern bool wifi_connected);
@@ -149,56 +149,56 @@ PRIMITIVE(#%sys, sys, 2, 42)
 {
   char str1[50];
   char str2[120];
-  E32(esp_err_t result);
+  // E32(esp_err_t result);
   E32(esp_sleep_wakeup_cause_t cause);
 
   EXPECT(IS_SMALL_INT(reg1), "sys.0", "operation as small int");
   a1 = decode_int(reg1);
 
   switch (a1) {
-    case RESET:
+    case SYS_RESET:
       E32(esp_restart());
       WKS(terminate());
       reg1 = NIL;
       break;
 
-    case DEEP_SLEEP:
+    case SYS_DEEP_SLEEP:
       if (reg2 != NIL) {
         GET_NEXT_VALUE((a1 >= 0) && (a1 <= 8000000), "sys.1", "sleep time <= 8000000ms");
         E32(ESP_ERROR_CHECK(esp_sleep_enable_timer_wakeup(1000ULL * a1)));
         DEBUG("SYS", "WakeUp in %d ms", a1);
       }
-      E32(esp_wifi_disconnect());
-      E32(esp_wifi_stop());
+      E32(if (wifi_connected) esp_wifi_stop());
       DEBUG("SYS", "Deep Sleep Start");
       E32(esp_deep_sleep_start());
       reg1 = TRUE;
       break;
 
-    case LIGHT_SLEEP:
+    case SYS_LIGHT_SLEEP:
       if (reg2 != NIL) {
         GET_NEXT_VALUE((a1 >= 0) && (a1 <= 8000000), "sys.1", "sleep time <= 8000000ms");
         E32(ESP_ERROR_CHECK(esp_sleep_enable_timer_wakeup(1000ULL * a1)));
         DEBUG("SYS", "WakeUp in %d ms", a1);
       }
-      DEBUG("SYS", "Deep Sleep Start");
+      DEBUG("SYS", "Light Sleep Start");
       E32(esp_light_sleep_start());
       reg1 = TRUE;
       break;
 
-    case WATCHDOG:
+    case SYS_WATCHDOG:
       E32(taskYIELD());
       reg1 = TRUE;
       break;
 
-    case SLEEP:
+    case SYS_SLEEP:
       GET_NEXT_VALUE((a1 >= 0) && (a1 <= 30000), "sys.1", "sleep time <= 30000ms");
       E32(vTaskDelay(a1 / 10));
-      WKS(usleep(1000L * a1));
+      DEBUG("SYS", "Sleep %d ms", a1);
+      WKS(usleep(1000UL * a1));
       reg1 = TRUE;
       break;
 
-    case LOG:
+    case SYS_LOG:
       GET_NEXT_VALUE((a1 >= LOG_VERBOSE) && (a1 <= LOG_ERROR), "sys.2", "One of Error, Warning, Info, Verbose, Debug or None");
       GET_NEXT_STRING(str1,  20, "sys.", "log tag");
       GET_NEXT_STRING(str2, 120, "sys.", "log message");
@@ -219,7 +219,7 @@ PRIMITIVE(#%sys, sys, 2, 42)
       reg1 = TRUE;
       break;
 
-    case LOG_LEVEL:
+    case SYS_LOG_LEVEL:
       GET_NEXT_VALUE((a1 >= LOG_NONE) && (a1 <= LOG_ERROR), "sys.3", "One of Error, Warning, Info, Verbose, Debug or None");
       GET_NEXT_STRING(str1, 20, "sys.", "log tag");
       E32(esp_log_level_set(str1, level_info[a1].level));
@@ -227,7 +227,7 @@ PRIMITIVE(#%sys, sys, 2, 42)
       reg1 = TRUE;
       break;
 
-    case WAKEUP_CAUSE:
+    case SYS_WAKEUP_CAUSE:
       #if ESP32
         cause = esp_sleep_get_wakeup_cause();
         switch (cause) {
@@ -250,6 +250,8 @@ PRIMITIVE(#%sys, sys, 2, 42)
       reg1 = FALSE;
       break;
   }
+
+  reg2 = reg3 = NIL;
 }
 
 // (GPIO operation (params ...))
@@ -261,7 +263,7 @@ PRIMITIVE(#%gpio, gpio, 2, 43)
   a1 = decode_int(reg1);
 
   switch (a1) {
-    case INIT:      // Init a GPIO bit, params: Pin# <Input|Output> [Pull-Up|Pull-Down|NIL]
+    case GPIO_INIT:      // Init a GPIO bit, params: Pin# <Input|Output> [Pull-Up|Pull-Down|NIL]
       E32(io_conf.intr_type = GPIO_PIN_INTR_DISABLE);
       EXPECT(IS_PAIR(reg2), "gpio.1", "parameters list");
       // Pin #
@@ -294,7 +296,7 @@ PRIMITIVE(#%gpio, gpio, 2, 43)
       DEBUG("GPIO", "Init Pin %d %s %s", a2, a3 == INPUT ? "Input" : "Output", a1 == -1 ? "" : (a1 == PULL_UP ? "Pull-Up" : "Pull-Down"));
       break;
 
-    case READ:      // read value from GPIO bit
+    case GPIO_READ:      // read value from GPIO bit
       if (IS_PAIR(reg2)) {
         GET_NEXT_VALUE((a1 >= 0) && (a1 <= 39), "gpio.5", "Pin# in range 0..39");
       }
@@ -308,7 +310,7 @@ PRIMITIVE(#%gpio, gpio, 2, 43)
       WKS(reg1 = ZERO);
       break;
 
-    case WRITE:      // write value to GPIO bit
+    case GPIO_WRITE:      // write value to GPIO bit
       EXPECT(IS_PAIR(reg2), "gpio.8", "parameters list");
       GET_NEXT_VALUE((a1 >= 0) && (a1 <= 39), "gpio.9", "Pin# in range 0..39");
       a2 = a1;
@@ -318,7 +320,7 @@ PRIMITIVE(#%gpio, gpio, 2, 43)
       WKS(reg1 = TRUE);
       break;
 
-    case WAKEUP:
+    case GPIO_WAKEUP:
       EXPECT(IS_PAIR(reg2), "gpio.11", "parameters list");
       GET_NEXT_VALUE((a1 == ENABLE) || (a1 == DISABLE), "gpio.12", "Enable | Disable");
       a2 = a1;
@@ -360,7 +362,7 @@ PRIMITIVE(#%net, net, 2, 44)
   a1 = decode_int(reg1);
 
   switch (a1) {
-    case WIFI_INIT:
+    case NET_WIFI_INIT:
       GET_NEXT_STRING(str1, 32, "sys.", "SSID"    );
       GET_NEXT_STRING(str2, 64, "sys.", "password");
       #if ESP32
@@ -385,34 +387,34 @@ PRIMITIVE(#%net, net, 2, 44)
       DEBUG("SYS", "WiFi Init with SSID: %s, result: %s", str1, reg1 == TRUE ? "OK" : "ERROR");
       break;
 
-    case WIFI_CONNECT:
+    case NET_WIFI_CONNECT:
       E32(ESP_ERROR_CHECK(result = esp_wifi_connect()));
       E32(reg1 = result == ESP_OK ? TRUE : FALSE);
       WKS(reg1 = TRUE);
       DEBUG("SYS", "WiFi Connect, result: %s", reg1 == TRUE ? "OK" : "ERROR");
       break;
 
-    case WIFI_DISCONNECT:
+    case NET_WIFI_DISCONNECT:
       E32(ESP_ERROR_CHECK(result = esp_wifi_disconnect()));
       E32(reg1 = result == ESP_OK ? TRUE : FALSE);
       WKS(reg1 = TRUE);
       DEBUG("SYS", "WiFi Disconnect, result: %s", reg1 == TRUE ? "OK" : "ERROR");
       break;
 
-    case WIFI_CONNECTED:
+    case NET_WIFI_CONNECTED:
       E32(reg1 = (wifi_connected ? TRUE : FALSE));
       WKS(reg1 = TRUE);
       DEBUG("SYS", "WiFi is %sconnected", reg1 == TRUE ? "" : "not ");
       break;
 
-    case WIFI_STOP:
+    case NET_WIFI_STOP:
       E32(ESP_ERROR_CHECK(result = esp_wifi_stop()));
       E32(reg1 = result == ESP_OK ? TRUE : FALSE);
       WKS(reg1 = TRUE);
       DEBUG("SYS", "WiFi Stop, result: %s", reg1 == TRUE ? "OK" : "ERROR");
       break;
 
-    case WIFI_START:
+    case NET_WIFI_START:
       E32(ESP_ERROR_CHECK(result = esp_wifi_start()));
       E32(reg1 = result == ESP_OK ? TRUE : FALSE);
       WKS(reg1 = TRUE);
@@ -420,10 +422,10 @@ PRIMITIVE(#%net, net, 2, 44)
       break;
 
 #if MQTT
-    case MQTT_INIT:
+    case NET_MQTT_INIT:
       break;
 
-    case MQTT_START:
+    case NET_MQTT_START:
       GET_NEXT_STRING(str2, 120, "NET", "host");
       GET_NEXT_VALUE((a1 >= 0) && (a1 <= 65535), "NET", "port #");
       GET_NEXT_STRING(str1, 50, "NET", "client id");
@@ -433,12 +435,12 @@ PRIMITIVE(#%net, net, 2, 44)
       reg1 = TRUE;
       break;
 
-    case MQTT_STOP:
+    case NET_MQTT_STOP:
       E32(esp_mqtt_stop());
       reg1 = TRUE;
       break;
 
-    case MQTT_SUB:
+    case NET_MQTT_SUB:
       GET_NEXT_STRING(str2, 120, "NET", "topic");
       GET_NEXT_VALUE((a1 >= 0) && (a1 < 3), "NET", "qos");
       E32(result = esp_mqtt_subscribe(str2, a1));
@@ -446,14 +448,14 @@ PRIMITIVE(#%net, net, 2, 44)
       WKS(reg1 = TRUE);
       break;
 
-    case MQTT_UNSUB:
+    case NET_MQTT_UNSUB:
       GET_NEXT_STRING(str2, 120, "NET", "topic");
       E32(result = esp_mqtt_unsubscribe(str2));
       E32(reg1 = result ? TRUE : FALSE);
       WKS(reg1 = TRUE);
       break;
 
-    case MQTT_PUBLISH:
+    case NET_MQTT_PUBLISH:
       break;
 #endif
 
