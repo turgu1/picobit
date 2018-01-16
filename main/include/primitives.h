@@ -27,11 +27,11 @@
 
 // Tools to used when a primitive receives a list of arguments as 
 // a second parameter
-#define GET_NEXT_VALUE(test, func, msg)             \
+#define GET_NEXT_VALUE(var, test, func, msg)             \
   EXPECT(IS_PAIR(reg2), func, "[pair] " msg);       \
   reg3 = GET_CAR(reg2);                             \
   EXPECT(IS_NUMBER(reg3), func, "[number] " msg );  \
-  a1   = decode_int(reg3);                          \
+  var  = decode_int(reg3);                          \
   reg2 = GET_CDR(reg2);                             \
   EXPECT(test, func, "[test] " msg)
 
@@ -41,5 +41,12 @@
   EXPECT(IS_STRING(reg3), func, "[string] " msg);   \
   reg2 = GET_CDR(reg2);                             \
   string2cstring(reg3, var, length);
+
+#define GET_NEXT_BOOL(var, func, msg)     \
+  EXPECT(IS_PAIR(reg2), func, "[pair] " msg);       \
+  reg3 = GET_CAR(reg2);                             \
+  EXPECT(IS_BOOL(reg3), func, "[boolean] " msg);   \
+  reg2 = GET_CDR(reg2);                             \
+  var = (reg3 == TRUE) ? true : false;
 
 #endif

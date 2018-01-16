@@ -115,7 +115,7 @@ PRIMITIVE(#%sys, sys, 2, 42)
 
     case SYS_DEEP_SLEEP:
       if (reg2 != NIL) {
-        GET_NEXT_VALUE((a1 >= 0) && (a1 <= 8000000), "sys.1", "sleep time <= 8000000ms");
+        GET_NEXT_VALUE(a1, (a1 >= 0) && (a1 <= 8000000), "sys.1", "sleep time <= 8000000ms");
         E32(ESP_ERROR_CHECK(esp_sleep_enable_timer_wakeup(1000ULL * a1)));
         DEBUG("SYS", "WakeUp in %d ms", a1);
       }
@@ -127,7 +127,7 @@ PRIMITIVE(#%sys, sys, 2, 42)
 
     case SYS_LIGHT_SLEEP:
       if (reg2 != NIL) {
-        GET_NEXT_VALUE((a1 >= 0) && (a1 <= 8000000), "sys.1", "sleep time <= 8000000ms");
+        GET_NEXT_VALUE(a1, (a1 >= 0) && (a1 <= 8000000), "sys.1", "sleep time <= 8000000ms");
         E32(ESP_ERROR_CHECK(esp_sleep_enable_timer_wakeup(1000ULL * a1)));
         DEBUG("SYS", "WakeUp in %d ms", a1);
       }
@@ -142,7 +142,7 @@ PRIMITIVE(#%sys, sys, 2, 42)
       break;
 
     case SYS_SLEEP:
-      GET_NEXT_VALUE((a1 >= 0) && (a1 <= 30000), "sys.1", "sleep time <= 30000ms");
+      GET_NEXT_VALUE(a1, (a1 >= 0) && (a1 <= 30000), "sys.1", "sleep time <= 30000ms");
       E32(vTaskDelay(a1 / 10));
       DEBUG("SYS", "Sleep %d ms", a1);
       WKS(usleep(1000UL * a1));
@@ -150,7 +150,7 @@ PRIMITIVE(#%sys, sys, 2, 42)
       break;
 
     case SYS_LOG:
-      GET_NEXT_VALUE((a1 >= LOG_VERBOSE) && (a1 <= LOG_ERROR), "sys.2", "One of Error, Warning, Info, Verbose, Debug or None");
+      GET_NEXT_VALUE(a1, (a1 >= LOG_VERBOSE) && (a1 <= LOG_ERROR), "sys.2", "One of Error, Warning, Info, Verbose, Debug or None");
       GET_NEXT_STRING(str1,  20, "sys.", "log tag");
       GET_NEXT_STRING(str2, 120, "sys.", "log message");
       #if ESP32
@@ -171,7 +171,7 @@ PRIMITIVE(#%sys, sys, 2, 42)
       break;
 
     case SYS_LOG_LEVEL:
-      GET_NEXT_VALUE((a1 >= LOG_NONE) && (a1 <= LOG_ERROR), "sys.3", "One of Error, Warning, Info, Verbose, Debug or None");
+      GET_NEXT_VALUE(a1, (a1 >= LOG_NONE) && (a1 <= LOG_ERROR), "sys.3", "One of Error, Warning, Info, Verbose, Debug or None");
       GET_NEXT_STRING(str1, 20, "sys.", "log tag");
       E32(esp_log_level_set(str1, level_info[a1].level));
       DEBUG("SYS", "Set Log Level %s for tag %s", level_info[a1].name, str1);

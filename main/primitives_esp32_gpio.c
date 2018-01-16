@@ -56,38 +56,36 @@ PRIMITIVE(#%gpio, gpio, 2, 43)
       E32(io_conf.intr_type = GPIO_PIN_INTR_DISABLE);
       EXPECT(IS_PAIR(reg2), "gpio.1", "parameters list");
       // Pin #
-      GET_NEXT_VALUE((a1 >= 0) && (a1 <= 39), "gpio.2", "Pin# in range 0..39");
+      GET_NEXT_VALUE(a1, (a1 >= 0) && (a1 <= 39), "gpio.2", "Pin# in range 0..39");
       E32(io_conf.pin_bit_mask = 1ULL << a1);
-      a2 = a1;
 
       // Input | Output
-      GET_NEXT_VALUE((a1 == OUTPUT) || (a1 == INPUT), "gpio.3", "Input | Output");
-      E32(io_conf.mode = (a1 == OUTPUT) ? GPIO_MODE_OUTPUT : GPIO_MODE_INPUT);
-      a3 = a1;
+      GET_NEXT_VALUE(a2, (a2 == OUTPUT) || (a2 == INPUT), "gpio.3", "Input | Output");
+      E32(io_conf.mode = (a2 == OUTPUT) ? GPIO_MODE_OUTPUT : GPIO_MODE_INPUT);
 
       // Pull_Up | Pull_Down | NIL
       if (reg2 != NIL) {
-        GET_NEXT_VALUE((reg3 == NIL) || (a1 == PULL_UP) || (a1 == PULL_DOWN), "gpio.4", "Pull-Up | Pull-Down | ()");
-        if (a1 == PULL_UP) {
+        GET_NEXT_VALUE(a3, (reg3 == NIL) || (a3 == PULL_UP) || (a3 == PULL_DOWN), "gpio.4", "Pull-Up | Pull-Down | ()");
+        if (a3 == PULL_UP) {
           E32(io_conf.pull_up_en   = 1);
           E32(io_conf.pull_down_en = 0);
         }
-        else if (a1 == PULL_DOWN) {
+        else if (a3 == PULL_DOWN) {
           E32(io_conf.pull_down_en = 1);
           E32(io_conf.pull_up_en   = 0);
         }
       }
       else {
-        a1 = -1;
+        a3 = -1;
       }
 
       E32(reg1 = check(gpio_config(&io_conf)));
-      DEBUG("GPIO", "Init Pin %d %s %s", a2, a3 == INPUT ? "Input" : "Output", a1 == -1 ? "" : (a1 == PULL_UP ? "Pull-Up" : "Pull-Down"));
+      DEBUG("GPIO", "Init Pin %d %s %s", a1, a2 == INPUT ? "Input" : "Output", a3 == -1 ? "" : (a3 == PULL_UP ? "Pull-Up" : "Pull-Down"));
       break;
 
     case GPIO_READ:      // read value from GPIO bit
       if (IS_PAIR(reg2)) {
-        GET_NEXT_VALUE((a1 >= 0) && (a1 <= 39), "gpio.5", "Pin# in range 0..39");
+        GET_NEXT_VALUE(a1, (a1 >= 0) && (a1 <= 39), "gpio.5", "Pin# in range 0..39");
       }
       else {
         EXPECT(IS_SMALL_INT(reg2), "gpio.6", "Pin# in range 0..39");
@@ -101,28 +99,25 @@ PRIMITIVE(#%gpio, gpio, 2, 43)
 
     case GPIO_WRITE:      // write value to GPIO bit
       EXPECT(IS_PAIR(reg2), "gpio.8", "parameters list");
-      GET_NEXT_VALUE((a1 >= 0) && (a1 <= 39), "gpio.9", "Pin# in range 0..39");
-      a2 = a1;
-      GET_NEXT_VALUE((a1 == LOW) || (a1 == HIGH), "gpio.10", "Low | High");
-      E32(reg1 = check(gpio_set_level(a2, a1)));
-      DEBUG("GPIO", "Write %d to pin %d", a1, a2);
+      GET_NEXT_VALUE(a1, (a1 >= 0) && (a1 <= 39), "gpio.9", "Pin# in range 0..39");
+      GET_NEXT_VALUE(a2, (a2 == LOW) || (a2 == HIGH), "gpio.10", "Low | High");
+      E32(reg1 = check(gpio_set_level(a1, a2)));
+      DEBUG("GPIO", "Write %d to pin %d", a2, a1);
       WKS(reg1 = TRUE);
       break;
 
     case GPIO_WAKEUP:
       EXPECT(IS_PAIR(reg2), "gpio.11", "parameters list");
-      GET_NEXT_VALUE((a1 == ENABLE) || (a1 == DISABLE), "gpio.12", "Enable | Disable");
-      a2 = a1;
-      GET_NEXT_VALUE((a1 >= 0) && (a1 <= 39), "gpio.13", "Pin# in range 0..39");
-      a3 = a1;
-      if (a2 == ENABLE) {
-        GET_NEXT_VALUE((a1 == LOW) || (a1 == HIGH), "gpio.14", "Low | High");
-        E32(reg1 = check(gpio_wakeup_enable(a3, a1 == LOW ? GPIO_INTR_LOW_LEVEL : GPIO_INTR_HIGH_LEVEL)));
-        DEBUG("GPIO", "WakeUp %s on Pin %d %s", a2 == ENABLE ? "Enable" : "Disable", a3, a1 == LOW ? "Low" : "High");
+      GET_NEXT_VALUE(a1, (a1 == ENABLE) || (a1 == DISABLE), "gpio.12", "Enable | Disable");
+      GET_NEXT_VALUE(a2, (a2 >= 0) && (a2 <= 39), "gpio.13", "Pin# in range 0..39");
+      if (a1 == ENABLE) {
+        GET_NEXT_VALUE(a3, (a3 == LOW) || (a3 == HIGH), "gpio.14", "Low | High");
+        E32(reg1 = check(gpio_wakeup_enable(a1, a3 == LOW ? GPIO_INTR_LOW_LEVEL : GPIO_INTR_HIGH_LEVEL)));
+        DEBUG("GPIO", "WakeUp %s on Pin %d %s", a1 == ENABLE ? "Enable" : "Disable", a2, a3 == LOW ? "Low" : "High");
       }
       else {
-        E32(reg1 = check(gpio_wakeup_disable(a3)));
-        DEBUG("GPIO", "WakeUp Disable on Pin %d", a3);
+        E32(reg1 = check(gpio_wakeup_disable(a2)));
+        DEBUG("GPIO", "WakeUp Disable on Pin %d", a2);
       }
       WKS(reg1 = TRUE);
       break;
