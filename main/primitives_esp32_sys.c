@@ -23,6 +23,7 @@
 #if ESP32
   #include <string.h>
   #include "esp32_utils.h"
+  #include "esp_wifi.h"
   
   #define COLOR(COLOR)  "\033[1;" COLOR "m"
   #define RESET_COLOR   "\033[0m"

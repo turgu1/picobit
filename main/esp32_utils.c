@@ -2,6 +2,10 @@
 #include "esp32_scheme_vm.h"
 #include "vm_arch.h"
 
+#include "nvs_flash.h"
+#include "esp_event.h"
+#include "esp_event_loop.h"
+
 #define ESP32_UTILS 1
 #include "esp32_utils.h"
 
@@ -48,7 +52,9 @@ bool esp32_init()
   
   ESP_ERROR_CHECK(result = esp_event_loop_init(event_handler, NULL));
   
-  if (result != ESP_OK) return false;  
+  if (result != ESP_OK) return false; 
+  
+  return true; 
 }
 
 #endif
