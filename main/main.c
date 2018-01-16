@@ -152,18 +152,15 @@
 
 #if ESP32
   #include "esp32_utils.h"
-  #include "nvs_flash.h"
-  #include "esp_event.h"
-  #include "esp_event_loop.h"
 
   // File component.mk contains an entry called COMPONENT_EMBED_FILES that
   // permit the integration of the binary code produced with the PicoBit compiler.
   // As the compiler produce an IntelHex file, it has to be translated to
   // a binary file using hex2bin program. The file needs to be called
   // "program.bin"
+
   extern const uint8_t program_bin_start[] asm("_binary_program_bin_start");
   extern const uint8_t program_bin_end[]   asm("_binary_program_bin_end");
-
   
   bool initialisations()
   {
