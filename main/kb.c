@@ -10,7 +10,7 @@
    December 2017
 */
 
-#include "esp32-scheme-vm.h"
+#include "esp32_scheme_vm.h"
 #include "testing.h"
 
 #if WORKSTATION

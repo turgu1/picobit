@@ -10,8 +10,8 @@
    December 2017
 */
 
-#include "esp32-scheme-vm.h"
-#include "vm-arch.h"
+#include "esp32_scheme_vm.h"
+#include "vm_arch.h"
 #include "mm.h"
 #include "hexfile.h"
 #include "kb.h"
@@ -151,7 +151,7 @@
 #endif // WORKSTATION
 
 #if ESP32
-
+  #include "esp32_utils.h"
   #include "nvs_flash.h"
   #include "esp_event.h"
   #include "esp_event_loop.h"
@@ -164,39 +164,9 @@
   extern const uint8_t program_bin_start[] asm("_binary_program_bin_start");
   extern const uint8_t program_bin_end[]   asm("_binary_program_bin_end");
 
-  bool wifi_connected = false;
-
-  esp_err_t event_handler(void *ctx, system_event_t *event)
-  {
-    switch(event->event_id) {
-      case SYSTEM_EVENT_STA_CONNECTED:
-        INFO("SYS", "WiFi connected");
-        wifi_connected = true;
-        break;
-
-      case SYSTEM_EVENT_STA_DISCONNECTED:
-        INFO("SYS", "WiFi disconnected");
-        wifi_connected = false;
-        break;
-
-      default:
-        break;
-    }
-    return ESP_OK;
-  }
-
+  
   bool initialisations()
   {
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES) {
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        ret = nvs_flash_init();
-    }
-    ESP_ERROR_CHECK(ret);
-
-    ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
-
-    verbose = VERBEUX;
 
     program = program_bin_start;
     max_addr = program_bin_end - program_bin_start;
@@ -216,6 +186,7 @@
 
     #endif
 
+    if (!esp32_init()) return false;
     if (!mm_init(program)) return false;
 
     #if STATISTICS

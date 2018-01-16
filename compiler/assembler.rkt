@@ -269,7 +269,7 @@
 ;;  1) ROM constant indexes start at #xE000 (min-rom-encoding .. )
 ;;  2) FALSE, TRUE and NIL are coded as #xFFFD, #xFFFE and #xFFFF respectively
 ;;  3) FIXNUMs are coded 0xFE00.. 0xFF00 (-1 .. 255)
-;;  4) Cell types are different than the original picobit. Check vm-arch.h for details
+;;  4) Cell types are different than the original picobit. Check vm_arch.h for details
 ;;
 ;; Cells are 5 bytes in length.
 ;; Little Endian, not Big Endian

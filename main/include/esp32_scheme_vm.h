@@ -52,6 +52,7 @@ extern void terminate();
   #include "esp_system.h"
   #include "esp_spi_flash.h"
   #include "esp_heap_caps.h"
+  #include "esp_err.h"
 
   #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
   #include "esp_log.h"
@@ -60,7 +61,6 @@ extern void terminate();
   #define DEBUGGING 0
   #define TRACING   0
   #define TESTS     0
-  #define VERBEUX   true
 
   #define E32(instr) instr
   #define WKS(instr)

@@ -21,7 +21,7 @@
   (let* ([forms        (read-program in-port)]
          [node         (parse-program forms global-env)])
     (when (show-parsed?)
-      (pretty-print (node->expr node)))
+          (pretty-print (node->expr node)))
     (adjust-unmutable-references! node)
     ;; done first to expose more left-left-lambdas, help constant folding, etc.
     (copy-propagate!              node)
@@ -40,21 +40,21 @@
       (resolve-toplevel-labels! bbs)
       (let ([prog (schedule (tree-shake! bbs))])
         (when (show-asm?)
-          (pretty-print prog))
+              (pretty-print prog))
         ;; output port is in a thunk to avoid creating result
         ;; files if compilation fails
         (let ([size (assemble prog (out-port-thunk))])
           (when (show-size?)
-            (printf "~a bytes\n" size)))))))
+                (printf "~a bytes\n" size)))))))
 
 (define output-file-gen
   (make-parameter
-   (lambda (in)
-     (let ([hex-filename (path-replace-suffix in ".hex")])
-       ;; r5rs's with-output-to-file (in asm.rkt) can't overwrite. bleh
-       (when (file-exists? hex-filename)
-         (delete-file hex-filename))
-       hex-filename))))
+    (lambda (in)
+      (let ([hex-filename (path-replace-suffix in ".hex")])
+        ;; r5rs's with-output-to-file (in asm.rkt) can't overwrite. bleh
+        (when (file-exists? hex-filename)
+              (delete-file hex-filename))
+        hex-filename))))
 
 (command-line
  #:once-each
@@ -78,11 +78,9 @@
   (output-file-gen (lambda (in) out))]
  #:args (filename)
  (void
-  (if (equal? filename "-")
-      ;; read input from stdin, produce code on stdout
-      (compile
-       (current-input-port)
-       (lambda () (current-output-port)))
-      (compile
-       (open-input-file filename)
-       (lambda () (open-output-file ((output-file-gen) filename)))))))
+   (if (equal? filename "-")
+       ;; read input from stdin, produce code on stdout
+       (compile (current-input-port)
+                (lambda () (current-output-port)))
+       (compile (open-input-file filename)
+                (lambda () (open-output-file ((output-file-gen) filename)))))))

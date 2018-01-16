@@ -42,7 +42,7 @@ Cells Definitions.
 
      -fpack-struct=1
 
-  It is defined as a pragma in file inc/esp32-scheme-vm.h as follow:
+  It is defined as a pragma in file inc/esp32_scheme_vm.h as follow:
 
      #pragma pack(1)
 
@@ -665,7 +665,7 @@ typedef const uint16_t * pgm_sptr;
      managed by the virtual machine.
 
   3. Never directly access virtual machine union and structure defined in file
-     vm-arch.h. Use the macro defined in that same file to access those
+     vm_arch.h. Use the macro defined in that same file to access those
      structures. This will ensure coherence on changes made to the virtual
      machine internals.
 

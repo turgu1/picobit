@@ -26,9 +26,9 @@
 (define (display x)
         (if (string? x)
             (for-each putchar (string->list x))
-            (write x)
-            )
-        )
+            (write x)))
+            
+        
 
 (define (newline) (#%putchar #\newline 3))
 
@@ -38,36 +38,36 @@
 
 (define (write x)
         (cond ((string? x)
-	             (begin (#%putchar #\" 3)
-		                  (display x)
-		                  (#%putchar #\" 3)))
-	            ((number? x)
-	             (display (number->string x)))
-	            ((pair? x)
-	             (begin (#%putchar #\( 3)
+               (begin (#%putchar #\" 3)
+                      (display x)
+                      (#%putchar #\" 3)))
+              ((number? x)
+               (display (number->string x)))
+              ((pair? x)
+               (begin (#%putchar #\( 3)
                       (write (car x))
                       (#%write-list (cdr x))))
-	            ((symbol? x)
-	             (display "#<symbol>"))
-	            ((boolean? x)
-	             (display (if x "#t" "#f")))
-	            (else
-	             (display "#<object>"))))
+              ((symbol? x)
+               (display "#<symbol>"))
+              ((boolean? x)
+               (display (if x "#t" "#f")))
+              (else
+               (display "#<object>"))))
 
 ;; TODO have vectors and co ?
 
 (define #%write-list
   (lambda (lst)
     (cond ((null? lst)
-	   (#%putchar #\) 3))
-	  ((pair? lst)
-	   (begin (#%putchar #\space 3)
-		  (write (car lst))
-		  (#%write-list (cdr lst))))
-	  (else
-	   (begin (display " . ")
-		  (write lst)
-		  (#%putchar #\) 3))))))
+           (#%putchar #\) 3))
+     ((pair? lst)
+      (begin (#%putchar #\space 3)
+       (write (car lst))
+       (#%write-list (cdr lst))))
+     (else
+       (begin (display " . ")
+         (write lst)
+         (#%putchar #\) 3))))))
 
 (define pp
   (lambda (x)

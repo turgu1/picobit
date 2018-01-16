@@ -13,8 +13,8 @@
 // primitives-vector
 // Builtin Indexes: 33..37
 
-#include "esp32-scheme-vm.h"
-#include "vm-arch.h"
+#include "esp32_scheme_vm.h"
+#include "vm_arch.h"
 #include "mm.h"
 #include "testing.h"
 

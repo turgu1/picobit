@@ -30,7 +30,7 @@ address space is divided into three zones:
   * 0xFE00 - 0xFFFF: Coded small ints, true, false and ()
 
 Each ROM and RAM data cell are composed of 5 bytes. Please look at file
-`inc/vm-arch.h` for details regarding the vm architecture. As the address space
+`inc/vm_arch.h` for details regarding the vm architecture. As the address space
 architecture is different than the original PicoBit, small changes were
 required for the picobit compiler in support of this setup (file `assembler.rkt`).
 

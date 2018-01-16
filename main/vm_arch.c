@@ -10,10 +10,10 @@
    December 2017
 */
 
-#include "esp32-scheme-vm.h"
+#include "esp32_scheme_vm.h"
 
 #define VM_ARCH
-#include "vm-arch.h"
+#include "vm_arch.h"
 
 #include "mm.h"
 #include "testing.h"

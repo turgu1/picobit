@@ -1,5 +1,5 @@
 END {
-  print "#include \"esp32-scheme-vm.h\""
+  print "#include \"esp32_scheme_vm.h\""
   print "#include \"primitives.h\""
   print ""
   print "#ifdef CONFIG_DEBUG_STRINGS"

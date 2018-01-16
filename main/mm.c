@@ -10,14 +10,14 @@
    December 2017
 */
 
-#include "esp32-scheme-vm.h"
-#include "vm-arch.h"
+#include "esp32_scheme_vm.h"
+#include "vm_arch.h"
 #include "testing.h"
 #include "bignum.h"
 
 #include <string.h>
 
-#if STATISTICS
+#if STATISTICS_GC
   #include <time.h>
 #endif
 
@@ -257,11 +257,10 @@ void mm_gc()
 
   #if STATISTICS
     used_cells_count = 0;
+    gc_call_counter++;
   #endif
 
   #if STATISTICS_GC
-    gc_call_counter++;
-
     double gc_duration;
     clock_t start_time;
     clock_t end_time;

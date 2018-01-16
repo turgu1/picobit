@@ -1,4 +1,4 @@
-#include "esp32-scheme-vm.h"
+#include "esp32_scheme_vm.h"
 #include "primitives.h"
 
 #ifdef CONFIG_DEBUG_STRINGS

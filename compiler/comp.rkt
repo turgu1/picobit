@@ -54,7 +54,7 @@
             (define val (var-val var)) ; non-false implies immutable
             (if (cst? val) ; immutable global, counted as cst
                 (gen-push-constant (cst-val val) ctx)
-                (gen-push-global   (var-bare-id  var) ctx)) ]
+                (gen-push-global   (var-bare-id  var) ctx))]
            [else
             (compiler-error "undefined variable:" (var-id var))])]
     [(or (? def? node) (? set? node))
@@ -114,7 +114,7 @@
                              (context-change-env
                               (context-add-bb ctx5 label-then)
                               (context-env2 ctx4)))])
-       ctx6)])]))
+         ctx6)])]))
 
 (define (comp-seq node reason ctx)
   (match node
@@ -163,10 +163,8 @@
        [(ctx5) (gen-goto label-continue ctx4)]
        [(ctx6) (gen-entry (length (prc-params node))
                           (prc-rest? node)
-                          (context-add-bb
-                           (context-change-env ctx5
-                                               body-env)
-                           label-entry))]
+                          (context-add-bb (context-change-env ctx5 body-env)
+                                          label-entry))]
        [(ctx7) (comp-tail (child1 node) ctx6)])
     (set-prc-entry-label! node label-entry)
     (context-add-bb (context-change-env ctx7 (context-env ctx5))
@@ -175,7 +173,7 @@
 (define (prc->env prc)
   (make-env
    (let ([params (prc-params prc)])
-     (make-stack (length params) (map var-bare-id params)))
+        (make-stack (length params) (map var-bare-id params)))
    (map var-bare-id (non-global-fv prc))))
 
 (define (comp-call node reason orig-ctx)
