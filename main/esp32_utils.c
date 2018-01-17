@@ -10,18 +10,29 @@
 #include "nvs_flash.h"
 #include "esp_event.h"
 #include "esp_event_loop.h"
+#include "esp_wifi.h"
 
 esp_err_t event_handler(void *ctx, system_event_t *event)
 {
   switch(event->event_id) {
+
+    case SYSTEM_EVENT_STA_START:
+      INFO("NET", "Wifi Started");
+      ESP_ERROR_CHECK(esp_wifi_connect());
+      break;
+
     case SYSTEM_EVENT_STA_CONNECTED:
-      INFO("SYS", "WiFi connected");
-      wifi_connected = true;
+      INFO("NET", "WiFi connected");
       break;
 
     case SYSTEM_EVENT_STA_DISCONNECTED:
-      INFO("SYS", "WiFi disconnected");
-      wifi_connected = false;
+      INFO("NET", "WiFi disconnected");
+      wifi_ready = false;
+      break;
+
+    case SYSTEM_EVENT_STA_GOT_IP:
+      wifi_ready = true;
+      INFO("NET", "Got IP");
       break;
 
     default:
@@ -38,8 +49,8 @@ cell_p check(esp_err_t result)
 bool esp32_init()
 {
   esp_err_t result;
-  
-  wifi_connected = false;
+
+  wifi_ready = false;
 
   result = nvs_flash_init();
   if (result == ESP_ERR_NVS_NO_FREE_PAGES) {
@@ -49,12 +60,14 @@ bool esp32_init()
   ESP_ERROR_CHECK(result);
 
   if (result != ESP_OK) return false;
-  
+
+  tcpip_adapter_init();
+
   ESP_ERROR_CHECK(result = esp_event_loop_init(event_handler, NULL));
-  
-  if (result != ESP_OK) return false; 
-  
-  return true; 
+
+  if (result != ESP_OK) return false;
+
+  return true;
 }
 
 #endif

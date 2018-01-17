@@ -26,7 +26,7 @@
 (define WiFi-Init        0)
 (define WiFi-Connect     1)
 (define WiFi-Disconnect  2)
-(define WiFi-Connected?  3)
+(define WiFi-Ready?      3)
 (define WiFi-Stop        4)
 (define WiFi-Start       5)
 

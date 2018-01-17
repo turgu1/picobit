@@ -10,8 +10,8 @@
 #if ESP32
   PUBLIC cell_p check(esp_err_t result);
   PUBLIC bool esp32_init();
-  
-  PUBLIC bool wifi_connected;
+
+  PUBLIC bool wifi_ready;
 #endif
 
 #undef PUBLIC

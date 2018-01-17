@@ -24,7 +24,7 @@
   #include <string.h>
   #include "esp32_utils.h"
   #include "esp_wifi.h"
-  
+
   #define COLOR(COLOR)  "\033[1;" COLOR "m"
   #define RESET_COLOR   "\033[0m"
 
@@ -119,7 +119,7 @@ PRIMITIVE(#%sys, sys, 2, 42)
         E32(ESP_ERROR_CHECK(esp_sleep_enable_timer_wakeup(1000ULL * a1)));
         DEBUG("SYS", "WakeUp in %d ms", a1);
       }
-      E32(if (wifi_connected) esp_wifi_stop());
+      E32(if (wifi_ready) esp_wifi_stop());
       DEBUG("SYS", "Deep Sleep Start");
       E32(esp_deep_sleep_start());
       reg1 = TRUE;

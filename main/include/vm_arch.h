@@ -523,6 +523,7 @@ typedef const uint16_t * pgm_sptr;
 #define IS_SMALL_INT(p)            ((p >= SMALL_INT_START) && (p <= SMALL_INT_MAX))
 #define IS_BIGNUM(p)               ((IN_RAM(p) && RAM_IS_BIGNUM(p)) || (IN_ROM(p) && ROM_IS_BIGNUM(p)))
 #define IS_NUMBER(p)               IS_SMALL_INT(p) || IS_BIGNUM(p)
+#define IS_BOOL(p)                 (p == TRUE) || (p == FALSE)
 
 #define IS_STRING(p)               ((IN_RAM(p) && RAM_IS_STRING(p)) || (IN_ROM(p) && ROM_IS_STRING(p)))
 
