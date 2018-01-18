@@ -456,7 +456,7 @@ bool mm_init(pgm_ptr program)
     if ((ram_heap_data = (cell_data_ptr) heap_caps_calloc(ram_heap_size, sizeof(cell_data), MALLOC_CAP_8BIT))  == NULL) return false;
     if ((ram_heap_flags = (cell_flags_ptr) heap_caps_calloc(ram_heap_size, sizeof(cell_flags), MALLOC_CAP_8BIT))  == NULL) return false;
 
-    byte_size = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT) - 30000;
+    byte_size = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT) - 35000;
     vector_heap_size = byte_size / sizeof(cell);
     if ((vector_heap = (cell_ptr) heap_caps_calloc(vector_heap_size, sizeof(cell), MALLOC_CAP_8BIT)) == NULL) return false;
   #endif

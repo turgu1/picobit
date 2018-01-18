@@ -27,8 +27,6 @@
         (if (string? x)
             (for-each putchar (string->list x))
             (write x)))
-            
-        
 
 (define (newline) (#%putchar #\newline 3))
 

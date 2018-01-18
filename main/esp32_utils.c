@@ -21,6 +21,10 @@ esp_err_t event_handler(void *ctx, system_event_t *event)
       ESP_ERROR_CHECK(esp_wifi_connect());
       break;
 
+    case SYSTEM_EVENT_STA_STOP:
+      INFO("NET", "Wifi Stopped");
+      break;
+      
     case SYSTEM_EVENT_STA_CONNECTED:
       INFO("NET", "WiFi connected");
       break;
@@ -31,8 +35,8 @@ esp_err_t event_handler(void *ctx, system_event_t *event)
       break;
 
     case SYSTEM_EVENT_STA_GOT_IP:
-      wifi_ready = true;
       INFO("NET", "Got IP");
+      wifi_ready = true;
       break;
 
     default:

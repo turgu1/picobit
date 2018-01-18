@@ -4,6 +4,7 @@ compiled/
 obj/
 bin/
 build-esp32/
+trials/
 obj
 bin
 build-esp32
