@@ -1,10 +1,12 @@
 ;; Example of connecting to a WiFi network and transmission through MQTT
 ;;
 ;; One connection is established, the LED connected to pin 2 will
-;; blink once every second.
+;; blink once every second. Every second a message will be published to the
+;; MQTT host under the indicated topic
 
 (define WIFI-SSID     "your SSID")
 (define WIFI-PSW      "password")
+
 (define MQTT-HOST     "MQTT host address")
 (define MQTT-PORT     1883)
 (define MQTT-USER     "")
@@ -16,6 +18,7 @@
 (define LED Pin_2)
 
 (GPIO Init LED Output)
+(SYS Log-Level Info "*")
 
 (define (blinkit blink-count)
         (let loop ((state 0)(count (* blink-count 2)))
