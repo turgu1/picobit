@@ -20,6 +20,8 @@
 
 #include "primitives.h"
 
+#define TAG "NET"
+
 #if ESP32
   #include <string.h>
   #include "esp_wifi.h"
@@ -34,14 +36,14 @@
     {
         esp32_mqtt_client    = self;
         esp32_mqtt_connected = true;
-        DEBUG("NET", "MQTT Connected Callback");
+        DEBUG(TAG, "MQTT Connected Callback");
     }
 
     PRIVATE void mqtt_disconnected_cb(mqtt_client * self, mqtt_event_data_t * params)
     {
         esp32_mqtt_connected = false;
         esp32_mqtt_client = NULL;
-        DEBUG("NET", "MQTT Disconnected Callback");
+        DEBUG(TAG, "MQTT Disconnected Callback");
     }
 
     PRIVATE void mqtt_subscribe_cb(mqtt_client * self, mqtt_event_data_t * params)
@@ -49,17 +51,17 @@
       // ESP_LOGI(MQTT_TAG, "[APP] Subscribe ok, test publish msg");
       // mqtt_client *client = (mqtt_client *)self;
       // mqtt_publish(client, "/test", "abcde", 5, 0, 0);
-      DEBUG("NET", "MQTT Suscribe Callback");
+      DEBUG(TAG, "MQTT Suscribe Callback");
     }
 
     PRIVATE void mqtt_publish_cb(mqtt_client * self, mqtt_event_data_t * params)
     {
-      DEBUG("NET", "MQTT Publish Callback");
+      DEBUG(TAG, "MQTT Publish Callback");
     }
 
     PRIVATE void mqtt_data_cb(mqtt_client * self, mqtt_event_data_t * params)
     {
-        DEBUG("NET", "MQTT Data Callback");
+        DEBUG(TAG, "MQTT Data Callback");
         // mqtt_client *client = (mqtt_client *)self;
         // mqtt_event_data_t *event_data = (mqtt_event_data_t *)params;
         //
@@ -159,103 +161,103 @@ PRIMITIVE(#%net, net, 2, 44)
       #else
         reg1 = TRUE;
       #endif
-      DEBUG("NET", "WiFi Init with SSID: %s, result: %s", str1, reg1 == TRUE ? "OK" : "ERROR");
+      DEBUG(TAG, "WiFi Init with SSID: %s, result: %s", str1, reg1 == TRUE ? "OK" : "ERROR");
       break;
 
     case NET_WIFI_CONNECT:
       E32(ESP_ERROR_CHECK(result = esp_wifi_connect()));
       E32(reg1 = result == ESP_OK ? TRUE : FALSE);
       WKS(reg1 = TRUE);
-      DEBUG("NET", "WiFi Connect, result: %s", reg1 == TRUE ? "OK" : "ERROR");
+      DEBUG(TAG, "WiFi Connect, result: %s", reg1 == TRUE ? "OK" : "ERROR");
       break;
 
     case NET_WIFI_DISCONNECT:
       E32(ESP_ERROR_CHECK(result = esp_wifi_disconnect()));
       E32(reg1 = result == ESP_OK ? TRUE : FALSE);
       WKS(reg1 = TRUE);
-      DEBUG("NET", "WiFi Disconnect, result: %s", reg1 == TRUE ? "OK" : "ERROR");
+      DEBUG(TAG, "WiFi Disconnect, result: %s", reg1 == TRUE ? "OK" : "ERROR");
       break;
 
     case NET_WIFI_READY:
       E32(reg1 = (wifi_ready ? TRUE : FALSE));
       WKS(reg1 = TRUE);
-      DEBUG("NET", "WiFi is %sready", reg1 == TRUE ? "" : "not ");
+      DEBUG(TAG, "WiFi is %sready", reg1 == TRUE ? "" : "not ");
       break;
 
     case NET_WIFI_STOP:
       E32(ESP_ERROR_CHECK(result = esp_wifi_stop()));
       E32(reg1 = result == ESP_OK ? TRUE : FALSE);
       WKS(reg1 = TRUE);
-      DEBUG("NET", "WiFi Stop, result: %s", reg1 == TRUE ? "OK" : "ERROR");
+      DEBUG(TAG, "WiFi Stop, result: %s", reg1 == TRUE ? "OK" : "ERROR");
       break;
 
     case NET_WIFI_START:
       E32(ESP_ERROR_CHECK(result = esp_wifi_start()));
       E32(reg1 = result == ESP_OK ? TRUE : FALSE);
       WKS(reg1 = TRUE);
-      DEBUG("NET", "WiFi Start, result: %s", reg1 == TRUE ? "OK" : "ERROR");
+      DEBUG(TAG, "WiFi Start, result: %s", reg1 == TRUE ? "OK" : "ERROR");
       break;
 
 #if MQTT
     case NET_MQTT_INIT:
-      GET_NEXT_STRING(str1, 64, "NET", "host");
-      GET_NEXT_VALUE(a1, (a1 >= 0) && (a1 <= 65535), "NET", "port #");
-      GET_NEXT_STRING(str2, 32, "NET", "client id");
-      GET_NEXT_STRING(str3, 32, "NET", "username");
-      GET_NEXT_STRING(str4, 32, "NET", "password");
+      GET_NEXT_STRING(str1, 64, TAG, "host");
+      GET_NEXT_VALUE(a1, (a1 >= 0) && (a1 <= 65535), TAG, "port #");
+      GET_NEXT_STRING(str2, 32, TAG, "client id");
+      GET_NEXT_STRING(str3, 32, TAG, "username");
+      GET_NEXT_STRING(str4, 32, TAG, "password");
       E32(strcpy(esp32_mqtt_settings.host,      str1));
       E32(strcpy(esp32_mqtt_settings.client_id, str2));
       E32(strcpy(esp32_mqtt_settings.username,  str3));
       E32(strcpy(esp32_mqtt_settings.password,  str4));
       E32(esp32_mqtt_settings.port = a1);
-      DEBUG("NET", "MQTT Init: host(%s) port(%d) clientId(%s) username(%s)",
+      DEBUG(TAG, "MQTT Init: host(%s) port(%d) clientId(%s) username(%s)",
         str1, a1, str2, str3);
         reg1 = TRUE;
-      DEBUG("NET", "MQTT Start");
+      DEBUG(TAG, "MQTT Start");
       E32(mqtt_start(&esp32_mqtt_settings));
       reg1 = TRUE;
       break;
 
     case NET_MQTT_START:
       E32(mqtt_start(&esp32_mqtt_settings));
-      DEBUG("NET", "MQTT Start");
+      DEBUG(TAG, "MQTT Start");
       reg1 = TRUE;
       break;
 
     case NET_MQTT_STOP:
       E32(if (esp32_mqtt_connected) mqtt_stop());
-      DEBUG("NET", "MQTT Stop");
+      DEBUG(TAG, "MQTT Stop");
       reg1 = TRUE;
       break;
 
     case NET_MQTT_CONNECTED:
       E32(reg1 = esp32_mqtt_connected ? TRUE : FALSE);
       WKS(reg1 = TRUE);
-      DEBUG("NET", "MQTT Connected?: %s", (reg1 == TRUE) ? "True" : "False");
+      DEBUG(TAG, "MQTT Connected?: %s", (reg1 == TRUE) ? "True" : "False");
       break;
 
     case NET_MQTT_SUB:
-      GET_NEXT_STRING(str1, 121, "NET", "topic");
-      GET_NEXT_VALUE(a1, (a1 >= 0) && (a1 < 3), "NET", "qos");
+      GET_NEXT_STRING(str1, 121, TAG, "topic");
+      GET_NEXT_VALUE(a1, (a1 >= 0) && (a1 < 3), TAG, "qos");
       E32(mqtt_subscribe(esp32_mqtt_client, str1, a1));
-      DEBUG("NET", "MQTT Subscribe: topic(%s) qos(%d)", str1, a1)
+      DEBUG(TAG, "MQTT Subscribe: topic(%s) qos(%d)", str1, a1)
       reg1 = TRUE;
       break;
 
     case NET_MQTT_UNSUB:
-      GET_NEXT_STRING(str1, 121, "NET", "topic");
+      GET_NEXT_STRING(str1, 121, TAG, "topic");
       E32(mqtt_unsubscribe(esp32_mqtt_client, str1));
-      DEBUG("NET", "MQTT Unsubscribe: topic(%s)", str1)
+      DEBUG(TAG, "MQTT Unsubscribe: topic(%s)", str1)
       reg1 = TRUE;
       break;
 
     case NET_MQTT_PUBLISH:
-      GET_NEXT_STRING(str1, 121, "NET", "topic");
-      GET_NEXT_STRING(str2, 121, "NET", "data");
-      GET_NEXT_VALUE(a1, (a1 >= 0) && (a1 <= 3), "NET", "qos");
-      GET_NEXT_BOOL(a2, "NET", "retain?");
+      GET_NEXT_STRING(str1, 121, TAG, "topic");
+      GET_NEXT_STRING(str2, 121, TAG, "data");
+      GET_NEXT_VALUE(a1, (a1 >= 0) && (a1 <= 3), TAG, "qos");
+      GET_NEXT_BOOL(a2, TAG, "retain?");
       E32(mqtt_publish(esp32_mqtt_client, str1, str2, strlen(str2), a1, a2));
-      DEBUG("NET", "MQTT Publish: topic(%s) data(%s) qos(%d) retain(%s)",
+      DEBUG(TAG, "MQTT Publish: topic(%s) data(%s) qos(%d) retain(%s)",
         str1, str2, a1, a2 ? "true" : "false");
       reg1 = TRUE;
       break;
@@ -270,7 +272,7 @@ PRIMITIVE(#%net, net, 2, 44)
 #endif
 
     default:
-      ERROR("net", "Unknown operation: %d", a1);
+      ERROR(TAG, "Unknown operation: %d", a1);
       reg1 = FALSE;
       break;
   }

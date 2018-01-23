@@ -20,6 +20,8 @@
 
 #include "primitives.h"
 
+#define TAG "SYS"
+
 #if ESP32
   #include <string.h>
   #include "esp32_utils.h"
@@ -103,7 +105,7 @@ PRIMITIVE(#%sys, sys, 2, 42)
   // E32(esp_err_t result);
   E32(esp_sleep_wakeup_cause_t cause);
 
-  EXPECT(IS_SMALL_INT(reg1), "sys.0", "operation as small int");
+  EXPECT(IS_SMALL_INT(reg1), TAG, "operation as small int");
   a1 = decode_int(reg1);
 
   switch (a1) {
@@ -115,23 +117,23 @@ PRIMITIVE(#%sys, sys, 2, 42)
 
     case SYS_DEEP_SLEEP:
       if (reg2 != NIL) {
-        GET_NEXT_VALUE(a1, (a1 >= 0) && (a1 <= 8000000), "sys.1", "sleep time <= 8000000ms");
+        GET_NEXT_VALUE(a1, (a1 >= 0) && (a1 <= 8000000), TAG, "sleep time <= 8000000ms");
         E32(ESP_ERROR_CHECK(esp_sleep_enable_timer_wakeup(1000ULL * a1)));
-        DEBUG("SYS", "WakeUp in %d ms", a1);
+        DEBUG(TAG, "WakeUp in %d ms", a1);
       }
       E32(if (wifi_ready) esp_wifi_stop());
-      DEBUG("SYS", "Deep Sleep Start");
+      DEBUG(TAG, "Deep Sleep Start");
       E32(esp_deep_sleep_start());
       reg1 = TRUE;
       break;
 
     case SYS_LIGHT_SLEEP:
       if (reg2 != NIL) {
-        GET_NEXT_VALUE(a1, (a1 >= 0) && (a1 <= 8000000), "sys.1", "sleep time <= 8000000ms");
+        GET_NEXT_VALUE(a1, (a1 >= 0) && (a1 <= 8000000), TAG, "sleep time <= 8000000ms");
         E32(ESP_ERROR_CHECK(esp_sleep_enable_timer_wakeup(1000ULL * a1)));
-        DEBUG("SYS", "WakeUp in %d ms", a1);
+        DEBUG(TAG, "WakeUp in %d ms", a1);
       }
-      DEBUG("SYS", "Light Sleep Start");
+      DEBUG(TAG, "Light Sleep Start");
       E32(esp_light_sleep_start());
       reg1 = TRUE;
       break;
@@ -142,17 +144,17 @@ PRIMITIVE(#%sys, sys, 2, 42)
       break;
 
     case SYS_SLEEP:
-      GET_NEXT_VALUE(a1, (a1 >= 0) && (a1 <= 30000), "sys.1", "sleep time <= 30000ms");
+      GET_NEXT_VALUE(a1, (a1 >= 0) && (a1 <= 30000), TAG, "sleep time <= 30000ms");
       E32(vTaskDelay(a1 / 10));
-      DEBUG("SYS", "Sleep %d ms", a1);
+      DEBUG(TAG, "Sleep %d ms", a1);
       WKS(usleep(1000UL * a1));
       reg1 = TRUE;
       break;
 
     case SYS_LOG:
-      GET_NEXT_VALUE(a1, (a1 >= LOG_VERBOSE) && (a1 <= LOG_ERROR), "sys.2", "One of Error, Warning, Info, Verbose, Debug or None");
-      GET_NEXT_STRING(str1,  20, "sys.", "log tag");
-      GET_NEXT_STRING(str2, 120, "sys.", "log message");
+      GET_NEXT_VALUE(a1, (a1 >= LOG_VERBOSE) && (a1 <= LOG_ERROR), TAG, "One of Error, Warning, Info, Verbose, Debug or None");
+      GET_NEXT_STRING(str1,  20, TAG, "log tag");
+      GET_NEXT_STRING(str2, 120, TAG, "log message");
       #if ESP32
         if (LOG_LOCAL_LEVEL >= level_info[a1].level) {
           esp_log_write(
@@ -166,15 +168,15 @@ PRIMITIVE(#%sys, sys, 2, 42)
             str2);
         }
       #endif
-      WKS(DEBUG("SYS", "Log %s for tag %s: %s", level_info[a1].name, str1, str2));
+      WKS(DEBUG(TAG, "Log %s for tag %s: %s", level_info[a1].name, str1, str2));
       reg1 = TRUE;
       break;
 
     case SYS_LOG_LEVEL:
-      GET_NEXT_VALUE(a1, (a1 >= LOG_NONE) && (a1 <= LOG_ERROR), "sys.3", "One of Error, Warning, Info, Verbose, Debug or None");
-      GET_NEXT_STRING(str1, 20, "sys.", "log tag");
+      GET_NEXT_VALUE(a1, (a1 >= LOG_NONE) && (a1 <= LOG_ERROR), TAG, "One of Error, Warning, Info, Verbose, Debug or None");
+      GET_NEXT_STRING(str1, 20, TAG, "log tag");
       E32(esp_log_level_set(str1, level_info[a1].level));
-      DEBUG("SYS", "Set Log Level %s for tag %s", level_info[a1].name, str1);
+      DEBUG(TAG, "Set Log Level %s for tag %s", level_info[a1].name, str1);
       reg1 = TRUE;
       break;
 
@@ -197,7 +199,7 @@ PRIMITIVE(#%sys, sys, 2, 42)
       break;
 
     default:
-      ERROR("SYS", "Unknown operation: %d", a1);
+      ERROR(TAG, "Unknown operation: %d", a1);
       reg1 = FALSE;
       break;
   }
