@@ -1,0 +1,3 @@
+[submodule "components/esp32mqtt"]
+	path = components/esp32mqtt
+	url = git@github.com:turgu1/esp32mqtt.git
